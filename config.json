@@ -1,6 +1,9 @@
 {
   "targetProject": "./examples/vue2-demo",
   "outputDir": "./output",
+  "logDir": "./logs",
+  "logLevel": "info",
+  "enableFileLog": true,
   "fileExtensions": [".vue", ".js", ".ts"],
   "excludeDirs": [
     "node_modules",

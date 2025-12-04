@@ -186,15 +186,8 @@ class I18nGenerator {
    * @returns {string}
    */
   generateBaseKey(text) {
-    // 简单处理：使用文本前几个字的简写
-    const chars = text.slice(0, 10).replace(/[^\u4e00-\u9fa5a-zA-Z0-9]/g, '');
-    
-    // 如果文本较短，直接使用hash
-    if (chars.length <= 3) {
-      return `text${this.simpleHash(text)}`;
-    }
-
-    return `text${this.simpleHash(chars)}`;
+    // 直接使用完整文本生成hash，保留标点符号以确保唯一性
+    return `text${this.simpleHash(text)}`;
   }
 
   /**

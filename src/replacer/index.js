@@ -9,8 +9,9 @@ const generate = require('@babel/generator').default;
  * 将源文件中的中文替换为i18n调用
  */
 class Replacer {
-  constructor(config) {
+  constructor(config, logger = null) {
     this.config = config;
+    this.logger = logger;
     this.backupDir = path.resolve(config.autoReplace?.backupDir || './backup');
   }
 
@@ -218,15 +219,20 @@ class Replacer {
         if (!textValue) continue;
 
         originalText = textValue;
-        i18nCall = `{{ $t('${i18nKey}') }}`;
+        i18nCall = `$t('${i18nKey}')`;
 
-        // 1. 先替换属性值 - 使用动态绑定（必须先处理，否则会与文本替换冲突）
+        // 1. 先替换三元运算符中的字符串（在 {{ }} 内）
+        // 匹配 {{ ... '原文本' ... }} 或 {{ ... "原文本" ... }}，将引号中的内容替换为 $t()
+        const ternaryRegex = new RegExp(`(\\{\\{[^}]*?)(['"])${this.escapeRegex(originalText)}\\2([^{]*?\\}\\})`, 'g');
+        content = content.replace(ternaryRegex, `$1${i18nCall}$3`);
+
+        // 2. 替换属性值 - 使用动态绑定
         const attrRegex = new RegExp(`(placeholder|title|label|alt)=["']${this.escapeRegex(originalText)}["']`, 'g');
-        content = content.replace(attrRegex, (match, attrName) => `:${attrName}="$t('${i18nKey}')"`);
+        content = content.replace(attrRegex, (match, attrName) => `:${attrName}="${i18nCall}"`);
 
-        // 2. 再替换文本内容
+        // 3. 最后替换纯文本内容
         const textRegex = new RegExp(`>\\s*${this.escapeRegex(originalText)}\\s*<`, 'g');
-        content = content.replace(textRegex, `>${i18nCall}<`);
+        content = content.replace(textRegex, `>{{ ${i18nCall} }}<`);
 
       } else {
         // 模板字符串
@@ -249,7 +255,22 @@ class Replacer {
 
         // 替换Vue插值表达式
         const escaped = this.escapeRegex(originalText);
-        content = content.replace(new RegExp(escaped, 'g'), i18nCall);
+        const regex = new RegExp(escaped, 'g');
+        const matches = content.match(regex);
+        
+        if (matches) {
+          content = content.replace(regex, i18nCall);
+          if (this.logger) {
+            // 从key中提取文件路径和行号
+            const [filePath, , lineInfo] = k.split('::');
+            const lineNum = lineInfo ? parseInt(lineInfo.split(':')[1]) : 0;
+            this.logger.logReplaced(originalText, i18nCall, filePath, lineNum);
+          }
+        } else if (this.logger) {
+          const [filePath, , lineInfo] = k.split('::');
+          const lineNum = lineInfo ? parseInt(lineInfo.split(':')[1]) : 0;
+          this.logger.logReplaceFailed(originalText, filePath, lineNum, '未找到匹配的文本');
+        }
       }
     }
 

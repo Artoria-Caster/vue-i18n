@@ -1,0 +1,22 @@
+{
+  "targetProject": "./test-project",
+  "outputDir": "./output",
+  "fileExtensions": [".vue", ".js", ".ts"],
+  "excludeDirs": [
+    "node_modules",
+    "dist",
+    ".git"
+  ],
+  "excludeFiles": [],
+  "encoding": "utf-8",
+  "autoReplace": {
+    "enabled": true,
+    "backup": true,
+    "backupDir": "./backup",
+    "preview": false,
+    "i18nPath": "./src/i18n",
+    "importPath": "@/i18n",
+    "generateEnglish": false,
+    "keyStrategy": "semantic"
+  }
+}
