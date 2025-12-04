@@ -1,4 +1,3 @@
-import i18n from '../i18n/index';
 // 常量定义文件
 
 /**
@@ -10,10 +9,10 @@ export const API_BASE_URL = 'https://api.example.com';
  * 应用配置常量
  */
 export const APP_CONFIG = {
-  APP_NAME: i18n.t('common.texto63gaq'),
+  APP_NAME: '企业管理系统',
   APP_VERSION: 'v1.0.0',
-  COPYRIGHT: i18n.t('common.textwt5c4z'),
-  COMPANY: i18n.t('common.text6ye96q')
+  COPYRIGHT: '版权所有 © 2024',
+  COMPANY: '某某科技有限公司'
 };
 
 /**
@@ -29,9 +28,9 @@ export const USER_ROLES = {
  * 用户角色名称映射
  */
 export const USER_ROLE_NAMES = {
-  [USER_ROLES.ADMIN]: i18n.t('common.text1l0s4x'),
-  [USER_ROLES.MANAGER]: i18n.t('common.text6zrzax'),
-  [USER_ROLES.USER]: i18n.t('common.textdirp8b')
+  [USER_ROLES.ADMIN]: '超级管理员',
+  [USER_ROLES.MANAGER]: '普通管理员',
+  [USER_ROLES.USER]: '普通用户'
 };
 
 /**
@@ -46,8 +45,8 @@ export const USER_STATUS = {
  * 用户状态名称映射
  */
 export const USER_STATUS_NAMES = {
-  [USER_STATUS.ACTIVE]: i18n.t('common.normal'),
-  [USER_STATUS.DISABLED]: i18n.t('common.disabled')
+  [USER_STATUS.ACTIVE]: '正常',
+  [USER_STATUS.DISABLED]: '禁用'
 };
 
 /**
@@ -65,11 +64,11 @@ export const ORDER_STATUS = {
  * 订单状态名称映射
  */
 export const ORDER_STATUS_NAMES = {
-  [ORDER_STATUS.PENDING]: i18n.t('common.textehbda'),
-  [ORDER_STATUS.PROCESSING]: i18n.t('common.textdljhn'),
-  [ORDER_STATUS.COMPLETED]: i18n.t('common.texte7hbq'),
-  [ORDER_STATUS.CANCELLED]: i18n.t('common.texte68dg'),
-  [ORDER_STATUS.REFUNDED]: i18n.t('common.texteggc0')
+  [ORDER_STATUS.PENDING]: '待支付',
+  [ORDER_STATUS.PROCESSING]: '处理中',
+  [ORDER_STATUS.COMPLETED]: '已完成',
+  [ORDER_STATUS.CANCELLED]: '已取消',
+  [ORDER_STATUS.REFUNDED]: '已退款'
 };
 
 /**
@@ -88,12 +87,12 @@ export const PRODUCT_CATEGORIES = {
  * 商品分类名称映射
  */
 export const PRODUCT_CATEGORY_NAMES = {
-  [PRODUCT_CATEGORIES.ELECTRONICS]: i18n.t('common.textf5y9dh'),
-  [PRODUCT_CATEGORIES.CLOTHING]: i18n.t('common.textdkoe3u'),
-  [PRODUCT_CATEGORIES.FOOD]: i18n.t('common.textjna7u5'),
-  [PRODUCT_CATEGORIES.HOME]: i18n.t('common.textbyi7fs'),
-  [PRODUCT_CATEGORIES.SPORTS]: i18n.t('common.textihkyhj'),
-  [PRODUCT_CATEGORIES.BOOKS]: i18n.t('common.textbaz5qy')
+  [PRODUCT_CATEGORIES.ELECTRONICS]: '电子产品',
+  [PRODUCT_CATEGORIES.CLOTHING]: '服装鞋帽',
+  [PRODUCT_CATEGORIES.FOOD]: '食品饮料',
+  [PRODUCT_CATEGORIES.HOME]: '家居用品',
+  [PRODUCT_CATEGORIES.SPORTS]: '运动户外',
+  [PRODUCT_CATEGORIES.BOOKS]: '图书文教'
 };
 
 /**
@@ -110,10 +109,10 @@ export const MESSAGE_TYPES = {
  * 消息类型文本映射
  */
 export const MESSAGE_TYPE_TEXTS = {
-  [MESSAGE_TYPES.SUCCESS]: i18n.t('common.success'),
-  [MESSAGE_TYPES.WARNING]: i18n.t('common.warning'),
-  [MESSAGE_TYPES.ERROR]: i18n.t('common.error'),
-  [MESSAGE_TYPES.INFO]: i18n.t('common.tips')
+  [MESSAGE_TYPES.SUCCESS]: '成功',
+  [MESSAGE_TYPES.WARNING]: '警告',
+  [MESSAGE_TYPES.ERROR]: '错误',
+  [MESSAGE_TYPES.INFO]: '提示'
 };
 
 /**
@@ -141,12 +140,12 @@ export const REGEX_PATTERNS = {
  * 验证错误信息
  */
 export const VALIDATION_MESSAGES = {
-  REQUIRED: i18n.t('common.textbxxu5h'),
-  PHONE_INVALID: i18n.t('common.textve0m7x'),
-  EMAIL_INVALID: i18n.t('common.textvenleq'),
-  PASSWORD_WEAK: i18n.t('common.textyxz3fr'),
-  USERNAME_LENGTH: i18n.t('common.textkuqe7m'),
-  CONFIRM_PASSWORD_MISMATCH: i18n.t('common.text785btd')
+  REQUIRED: '此字段为必填项',
+  PHONE_INVALID: '手机号格式不正确',
+  EMAIL_INVALID: '邮箱格式不正确',
+  PASSWORD_WEAK: '密码强度不够，需要包含大小写字母和数字，至少8位',
+  USERNAME_LENGTH: '用户名长度应在3到20个字符之间',
+  CONFIRM_PASSWORD_MISMATCH: '两次输入的密码不一致'
 };
 
 /**
@@ -175,31 +174,31 @@ export const STORAGE_KEYS = {
  * HTTP状态码消息映射
  */
 export const HTTP_STATUS_MESSAGES = {
-  200: i18n.t('common.texti3uy2i'),
-  201: i18n.t('common.textar737y'),
-  204: i18n.t('common.textazeh8z'),
-  400: i18n.t('common.text38ywoh'),
-  401: i18n.t('common.texteveqgj'),
-  403: i18n.t('common.textczyxlm'),
-  404: i18n.t('common.textxmqreg'),
-  500: i18n.t('common.textg8mhnx'),
-  502: i18n.t('common.textger1dk'),
-  503: i18n.t('common.textciarim')
+  200: '请求成功',
+  201: '创建成功',
+  204: '删除成功',
+  400: '请求参数错误',
+  401: '未授权，请重新登录',
+  403: '拒绝访问',
+  404: '请求的资源不存在',
+  500: '服务器内部错误',
+  502: '网关错误',
+  503: '服务不可用'
 };
 
 /**
  * 默认提示文本
  */
 export const DEFAULT_MESSAGES = {
-  LOADING: i18n.t('common.text27k1ha'),
-  SAVING: i18n.t('common.textvts3p8'),
-  DELETING: i18n.t('common.textven4ij'),
-  UPLOADING: i18n.t('common.textnytojt'),
-  PROCESSING: i18n.t('common.textu5bstf'),
-  SUCCESS: i18n.t('common.textd1spvi'),
-  ERROR: i18n.t('common.textd1rj43'),
-  CONFIRM_DELETE: i18n.t('common.textx02jb2'),
-  CONFIRM_CANCEL: i18n.t('common.textm7ratt'),
-  NO_DATA: i18n.t('common.textdcv57g'),
-  NETWORK_ERROR: i18n.t('common.textt0gxcf')
+  LOADING: '加载中...',
+  SAVING: '保存中...',
+  DELETING: '删除中...',
+  UPLOADING: '上传中...',
+  PROCESSING: '处理中...',
+  SUCCESS: '操作成功',
+  ERROR: '操作失败',
+  CONFIRM_DELETE: '确定要删除吗？此操作不可恢复！',
+  CONFIRM_CANCEL: '确定要取消吗？',
+  NO_DATA: '暂无数据',
+  NETWORK_ERROR: '网络连接失败，请检查网络设置'
 };

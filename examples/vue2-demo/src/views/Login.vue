@@ -2,15 +2,15 @@
   <div class="login-page">
     <div class="login-container">
       <div class="login-header">
-        <h1>{{ $t('common.texto63gaq') }}</h1>
-        <p>{{ $t('common.texte434me') }}</p>
+        <h1>企业管理系统</h1>
+        <p>欢迎登录</p>
       </div>
 
       <el-form :model="loginForm" :rules="rules" ref="loginForm" class="login-form">
         <el-form-item prop="username">
           <el-input
             v-model="loginForm.username"
-            :placeholder="$t('common.text7grhuz')"
+            placeholder="请输入用户名"
             prefix-icon="el-icon-user"
           />
         </el-form-item>
@@ -19,26 +19,26 @@
           <el-input
             v-model="loginForm.password"
             type="password"
-            :placeholder="$t('common.text2j9vj0')"
+            placeholder="请输入密码"
             prefix-icon="el-icon-lock"
             show-password
           />
         </el-form-item>
 
         <el-form-item>
-          <el-checkbox v-model="loginForm.remember">{{ $t('common.texthyc3iy') }}</el-checkbox>
-          <el-button type="text" style="float: right;">{{ $t('common.textxfgztg') }}</el-button>
+          <el-checkbox v-model="loginForm.remember">记住密码</el-checkbox>
+          <el-button type="text" style="float: right;">忘记密码？</el-button>
         </el-form-item>
 
         <el-form-item>
           <el-button type="primary" :loading="loading" @click="handleLogin" class="login-button">
-            {{ loading ? $t('common.textuvxwv9') : $t('common.login') }}
+            {{ loading ? '登录中...' : '登录' }}
           </el-button>
         </el-form-item>
       </el-form>
 
       <div class="login-footer">
-        <p>还没有账号？<el-button type="text">{{ $t('common.textfub0ks') }}</el-button></p>
+        <p>还没有账号？<el-button type="text">立即注册</el-button></p>
       </div>
     </div>
   </div>
@@ -56,13 +56,13 @@ export default {
       },
       rules: {
         username: [
-        { required: true, message: this.$t('common.text7grhuz'), trigger: 'blur' },
-        { min: 3, max: 20, message: this.$t('common.textc9ntcr'), trigger: 'blur' }],
-
+          { required: true, message: '请输入用户名', trigger: 'blur' },
+          { min: 3, max: 20, message: '用户名长度在3到20个字符', trigger: 'blur' }
+        ],
         password: [
-        { required: true, message: this.$t('common.text2j9vj0'), trigger: 'blur' },
-        { min: 6, message: this.$t('common.textsua2re'), trigger: 'blur' }]
-
+          { required: true, message: '请输入密码', trigger: 'blur' },
+          { min: 6, message: '密码长度不能少于6位', trigger: 'blur' }
+        ]
       },
       loading: false
     };
@@ -72,36 +72,37 @@ export default {
       this.$refs.loginForm.validate((valid) => {
         if (valid) {
           this.loading = true;
-
+          
           // 模拟登录
           setTimeout(() => {
             this.loading = false;
-
+            
             if (this.loginForm.username === 'admin' && this.loginForm.password === '123456') {
               this.$store.dispatch('login', {
                 id: 1,
                 username: this.loginForm.username,
-                realName: this.$t('common.textio38z'),
+                realName: '管理员',
                 role: 'admin'
               });
-
-              this.$message.success(this.$t('common.texty2hfit'));
+              
+              this.$message.success('登录成功，欢迎回来！');
               this.$router.push('/');
             } else {
-              this.$message.error(this.$t('common.textxqw8ho'));
+              this.$message.error('用户名或密码错误，请重试');
             }
           }, 1000);
         } else {
-          this.$message.warning(this.$t('common.text2dttlr'));
+          this.$message.warning('请填写完整的登录信息');
           return false;
         }
       });
     }
   },
   mounted() {
-    console.log(this.$t('common.text8bpx08'));
+    console.log('登录页面已加载');
   }
-};</script>
+};
+</script>
 
 <style scoped>
 .login-page {

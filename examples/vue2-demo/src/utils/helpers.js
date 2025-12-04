@@ -1,4 +1,3 @@
-import i18n from '../i18n/index';
 // 工具函数库
 
 /**
@@ -9,7 +8,7 @@ import i18n from '../i18n/index';
  */
 export function formatDate(date, format = 'YYYY-MM-DD HH:mm:ss') {
   if (!date) return '';
-
+  
   const d = new Date(date);
   const year = d.getFullYear();
   const month = String(d.getMonth() + 1).padStart(2, '0');
@@ -17,14 +16,14 @@ export function formatDate(date, format = 'YYYY-MM-DD HH:mm:ss') {
   const hour = String(d.getHours()).padStart(2, '0');
   const minute = String(d.getMinutes()).padStart(2, '0');
   const second = String(d.getSeconds()).padStart(2, '0');
-
-  return format.
-  replace('YYYY', year).
-  replace('MM', month).
-  replace('DD', day).
-  replace('HH', hour).
-  replace('mm', minute).
-  replace('ss', second);
+  
+  return format
+    .replace('YYYY', year)
+    .replace('MM', month)
+    .replace('DD', day)
+    .replace('HH', hour)
+    .replace('mm', minute)
+    .replace('ss', second);
 }
 
 /**
@@ -45,7 +44,7 @@ export function formatMoney(amount) {
  */
 export function debounce(func, delay = 300) {
   let timer = null;
-  return function (...args) {
+  return function(...args) {
     if (timer) clearTimeout(timer);
     timer = setTimeout(() => {
       func.apply(this, args);
@@ -61,7 +60,7 @@ export function debounce(func, delay = 300) {
  */
 export function throttle(func, interval = 300) {
   let lastTime = 0;
-  return function (...args) {
+  return function(...args) {
     const now = Date.now();
     if (now - lastTime >= interval) {
       func.apply(this, args);
@@ -78,8 +77,8 @@ export function throttle(func, interval = 300) {
 export function deepClone(obj) {
   if (obj === null || typeof obj !== 'object') return obj;
   if (obj instanceof Date) return new Date(obj);
-  if (obj instanceof Array) return obj.map((item) => deepClone(item));
-
+  if (obj instanceof Array) return obj.map(item => deepClone(item));
+  
   const cloneObj = {};
   for (let key in obj) {
     if (obj.hasOwnProperty(key)) {
@@ -111,7 +110,7 @@ export function generateRandomString(length = 8) {
 export function validatePhone(phone) {
   const reg = /^1[3-9]\d{9}$/;
   if (!reg.test(phone)) {
-    console.warn(i18n.t('common.textve0m7x'));
+    console.warn('手机号格式不正确');
     return false;
   }
   return true;
@@ -125,7 +124,7 @@ export function validatePhone(phone) {
 export function validateEmail(email) {
   const reg = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
   if (!reg.test(email)) {
-    console.warn(i18n.t('common.textvenleq'));
+    console.warn('邮箱格式不正确');
     return false;
   }
   return true;
@@ -155,10 +154,10 @@ export const storage = {
       localStorage.setItem(key, JSON.stringify(value));
       console.log(`本地存储设置成功：${key}`);
     } catch (e) {
-      console.error(i18n.t('common.textsav96m'), e);
+      console.error('本地存储设置失败：', e);
     }
   },
-
+  
   /**
    * 获取本地存储
    */
@@ -167,11 +166,11 @@ export const storage = {
       const value = localStorage.getItem(key);
       return value ? JSON.parse(value) : null;
     } catch (e) {
-      console.error(i18n.t('common.textwv9qll'), e);
+      console.error('本地存储读取失败：', e);
       return null;
     }
   },
-
+  
   /**
    * 移除本地存储
    */
@@ -180,19 +179,19 @@ export const storage = {
       localStorage.removeItem(key);
       console.log(`本地存储已删除：${key}`);
     } catch (e) {
-      console.error(i18n.t('common.textxfovhq'), e);
+      console.error('本地存储删除失败：', e);
     }
   },
-
+  
   /**
    * 清空本地存储
    */
   clear() {
     try {
       localStorage.clear();
-      console.log(i18n.t('common.text55o37'));
+      console.log('本地存储已全部清空');
     } catch (e) {
-      console.error(i18n.t('common.text32vbib'), e);
+      console.error('本地存储清空失败：', e);
     }
   }
 };
@@ -213,13 +212,13 @@ export function formatFileSize(bytes) {
 /**
  * 显示成功提示
  */
-export function showSuccessMessage(message = i18n.t('common.textd1spvi')) {
+export function showSuccessMessage(message = '操作成功') {
   console.log(`✓ ${message}`);
 }
 
 /**
  * 显示错误提示
  */
-export function showErrorMessage(message = i18n.t('common.textd1rj43')) {
+export function showErrorMessage(message = '操作失败') {
   console.error(`✗ ${message}`);
 }
