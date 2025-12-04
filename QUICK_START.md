@@ -34,7 +34,7 @@ npm start
 
 执行后会在 `output/` 目录生成JSON文件，包含所有提取的中文文本。
 
-### 第四步：查看提取结果
+### 第四步：查看和修改提取结果
 
 打开 `output/i18n-extracted-xxx.json`，检查提取的内容：
 
@@ -85,7 +85,53 @@ npm start
 - 例如：`首页 = Home`
 - 支持变量占位符，如：`欢迎{username}登录 = Welcome {username}`
 
-### 第五步：生成i18n配置（可选）
+**修改JSON后重新生成文件：**
+
+如果你修改了提取的JSON文件（如调整key、添加/删除条目），可以重新生成语言包和翻译模板：
+
+```bash
+# 方式1：使用npm脚本
+npm run regenerate output/i18n-extracted-xxx.json
+
+# 方式2：直接使用node命令
+node src/index.js regenerate output/i18n-extracted-xxx.json
+```
+
+这会根据修改后的JSON重新生成 `zh-CN.js` 和 `translation-template.txt` 文件。
+
+### 第五步：生成其他语言配置（可选）
+
+如果需要支持多语言（如英语、日语等），可以使用翻译生成功能：
+
+**1. 填写翻译模板**
+
+打开 `output/translation-template.txt`，在等号后填写翻译内容：
+
+```
+首页 = Home
+用户管理 = User Management
+欢迎{username}登录 = Welcome {username}
+退出登录 = Logout
+```
+
+**2. 生成目标语言配置文件**
+
+```bash
+# 生成英语配置
+npm run translate output en-US
+
+# 生成日语配置
+npm run translate output ja-JP
+
+# 生成韩语配置
+npm run translate output ko-KR
+```
+
+这会在 `output/` 目录生成对应的语言包文件（如 `en-US.js`）。
+
+> 详细文档请参考 [翻译生成指南](./docs/TRANSLATE_GUIDE.md)
+
+### 第六步：生成i18n配置（可选）
 
 ```bash
 node src/index.js generate output/i18n-extracted-xxx.json
@@ -95,7 +141,7 @@ node src/index.js generate output/i18n-extracted-xxx.json
 - `src/i18n/index.js` - i18n初始化文件（使用 vue-i18n@8.x）
 - `src/i18n/locales/zh-CN.js` - 中文语言包
 
-### 第六步：手动集成i18n
+### 第七步：手动集成i18n
 
 在你的 `main.js` 中引入i18n：
 
@@ -117,7 +163,7 @@ cd your-vue-project
 npm install vue-i18n
 ```
 
-### 第七步：手动替换或自动替换
+### 第八步：手动替换或自动替换
 
 #### 选项A：手动替换（推荐用于生产环境）
 
@@ -178,20 +224,43 @@ ls output/
 # 1. 提取所有中文
 npm start
 
-# 2. 生成i18n配置
+# 2. 修改JSON（可选）
+# 编辑 output/i18n-extracted-xxx.json
+
+# 3. 如果修改了JSON，重新生成语言包
+npm run regenerate output/i18n-extracted-xxx.json
+
+# 4. 生成i18n配置
 node src/index.js generate output/i18n-extracted-xxx.json
 
-# 3. 分批手动替换（安全）
+# 5. 分批手动替换（安全）
 # 根据JSON文件逐文件替换
 ```
 
-### 场景2：增量更新
+### 场景2：调整提取结果
+
+```bash
+# 1. 提取中文
+npm start
+
+# 2. 手动修改JSON文件
+# - 调整key名称
+# - 删除不需要的条目
+# - 合并重复项
+
+# 3. 重新生成语言包和翻译模板
+npm run regenerate output/i18n-extracted-xxx.json
+
+# 4. 继续后续步骤
+```
+
+### 场景3：增量更新
 
 ```bash
 # 只处理新增的文件，配置excludeDirs排除已处理的目录
 ```
 
-### 场景3：快速原型
+### 场景4：快速原型
 
 ```bash
 # 使用完整流程

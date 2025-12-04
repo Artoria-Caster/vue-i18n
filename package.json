@@ -8,6 +8,8 @@
     "extract": "node src/index.js extract",
     "generate": "node src/index.js generate",
     "replace": "node src/index.js replace",
+    "regenerate": "node src/index.js regenerate",
+    "translate": "node src/index.js translate",
     "verify": "node scripts/verify.js",
     "test": "node scripts/verify.js"
   },

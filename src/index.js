@@ -6,6 +6,7 @@ const Extractor = require('./extractor');
 const Generator = require('./generator');
 const I18nGenerator = require('./generator/i18nGenerator');
 const LocaleGenerator = require('./generator/localeGenerator');
+const TranslationGenerator = require('./generator/translationGenerator');
 const Replacer = require('./replacer');
 const Logger = require('./utils/logger');
 const Validator = require('./validator');
@@ -27,6 +28,7 @@ class I18nTool {
     this.generator = new Generator(this.config);
     this.i18nGenerator = new I18nGenerator(this.config);
     this.localeGenerator = new LocaleGenerator(this.config);
+    this.translationGenerator = new TranslationGenerator(this.config);
     this.replacer = new Replacer(this.config, this.logger);
     this.validator = new Validator(this.config, this.logger);
   }
@@ -131,6 +133,76 @@ class I18nTool {
     console.log('========================================\n');
 
     return keyMap;
+  }
+
+  /**
+   * 从已有JSON重新生成语言包和翻译模板文件
+   * @param {string} jsonFilePath 提取的JSON文件路径
+   */
+  async regenerate(jsonFilePath) {
+    console.log('\n========================================');
+    console.log('  Vue i18n 自动转换工具 - 重新生成语言包');
+    console.log('========================================\n');
+
+    // 读取提取的JSON
+    console.log('读取提取的JSON文件...');
+    const extractedData = await this.generator.readExtractedJson(jsonFilePath);
+
+    // 重新生成语言包文件和翻译对照文件
+    console.log('\n生成语言包文件和翻译对照文件...');
+    const outputDir = path.dirname(jsonFilePath);
+    await this.localeGenerator.generate(extractedData, outputDir);
+
+    console.log('\n========================================');
+    console.log('重新生成完成！');
+    console.log(`输出目录: ${outputDir}`);
+    console.log('  - zh-CN.js (语言包文件)');
+    console.log('  - translation-template.txt (翻译对照模板)');
+    console.log('========================================\n');
+  }
+
+  /**
+   * 根据zh-CN.js和翻译模板生成其他语言的配置文件
+   * @param {string} outputDir 输出目录（包含zh-CN.js和translation-template.txt）
+   * @param {string} targetLang 目标语言代码，默认为en-US
+   */
+  async translate(outputDir, targetLang = 'en-US') {
+    console.log('\n========================================');
+    console.log('  Vue i18n 自动转换工具 - 翻译生成模式');
+    console.log('========================================\n');
+
+    const zhCNPath = path.join(outputDir, 'zh-CN.js');
+    const templatePath = path.join(outputDir, 'translation-template.txt');
+
+    // 检查必需文件是否存在
+    if (!fs.existsSync(zhCNPath)) {
+      console.error(`错误: 未找到 zh-CN.js 文件: ${zhCNPath}`);
+      console.log('请先运行 npm run regenerate <json文件> 生成 zh-CN.js 文件');
+      return;
+    }
+
+    if (!fs.existsSync(templatePath)) {
+      console.error(`错误: 未找到 translation-template.txt 文件: ${templatePath}`);
+      console.log('请先运行 npm run regenerate <json文件> 生成翻译模板文件');
+      return;
+    }
+
+    try {
+      const outputPath = await this.translationGenerator.generate(
+        zhCNPath,
+        templatePath,
+        targetLang,
+        outputDir
+      );
+
+      console.log('\n========================================');
+      console.log('翻译生成完成！');
+      console.log(`输出文件: ${outputPath}`);
+      console.log('========================================\n');
+    } catch (error) {
+      console.error('\n翻译生成失败:', error.message);
+      this.logger.error('翻译生成失败', error);
+    }
   }
 
   /**
@@ -328,6 +400,24 @@ function main() {
     .action(async () => {
       const tool = new I18nTool();
       await tool.validate();
+    });
+
+  program
+    .command('regenerate <jsonFile>')
+    .description('从已有JSON重新生成语言包和翻译对照文件')
+    .action(async (jsonFile) => {
+      const tool = new I18nTool();
+      await tool.regenerate(jsonFile);
+    });
+
+  program
+    .command('translate [outputDir] [targetLang]')
+    .description('根据zh-CN.js和填好的translation-template.txt生成其他语言的配置文件')
+    .action(async (outputDir, targetLang) => {
+      const tool = new I18nTool();
+      const dir = outputDir || tool.config.outputDir || './output';
+      const lang = targetLang || 'en-US';
+      await tool.translate(dir, lang);
     });
 
   // 默认执行提取

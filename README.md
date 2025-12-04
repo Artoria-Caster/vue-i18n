@@ -12,6 +12,8 @@
   - [项目结构说明](./docs/PROJECT_STRUCTURE.md)
   - [使用示例](./docs/EXAMPLES.md)
   - [过滤功能示例](./docs/FILTER_EXAMPLES.md)
+  - [翻译生成指南](./docs/TRANSLATE_GUIDE.md) - 多语言配置生成
+  - [翻译示例](./docs/TRANSLATION_EXAMPLES.md) - 翻译模板填写示例
 
 ## 功能特性
 
@@ -238,12 +240,51 @@ node src/index.js generate <jsonFile>
 # 替换源代码
 node src/index.js replace <jsonFile> [--preview]
 
+# 重新生成语言包和翻译模板
+node src/index.js regenerate <jsonFile>
+
+# 根据翻译模板生成其他语言配置文件
+node src/index.js translate [outputDir] [targetLang]
+
 # 完整流程
 node src/index.js full
+
+# 验证转换结果
+node src/index.js validate
 
 # 查看帮助
 node src/index.js --help
 ```
+
+### npm 脚本
+
+```bash
+npm run extract      # 提取中文文本
+npm run generate     # 生成i18n配置
+npm run replace      # 替换源代码
+npm run regenerate   # 重新生成语言包
+npm run translate    # 生成其他语言配置（默认en-US）
+npm run verify       # 验证项目文件
+```
+
+## 多语言支持
+
+### 生成其他语言配置
+
+工具支持根据中文语言包和翻译对照模板生成其他语言的配置文件。详细文档请参考 [翻译生成指南](./docs/TRANSLATE_GUIDE.md)。
+
+**快速使用**：
+
+1. 运行 `npm run regenerate` 生成 `zh-CN.js` 和 `translation-template.txt`
+2. 编辑 `translation-template.txt`，填写翻译内容
+3. 运行 `npm run translate output en-US` 生成英语配置文件
+
+支持的语言代码示例：
+- `en-US` - 英语（美国）
+- `ja-JP` - 日语（日本）
+- `ko-KR` - 韩语（韩国）
+- `fr-FR` - 法语（法国）
+- 等其他标准语言代码
 
 ## 配置说明
 
