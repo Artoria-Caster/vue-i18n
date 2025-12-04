@@ -48,5 +48,11 @@
     "src/views/user/": "user.",
     "src/views/admin/": "admin.",
     "src/components/common/": "common."
+  },
+  "pendingTasks": {
+    "enabled": true,
+    "outputFormat": ["markdown", "json"],
+    "includeSkipped": true,
+    "includeFailed": true
   }
 }

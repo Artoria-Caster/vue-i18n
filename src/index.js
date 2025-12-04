@@ -208,6 +208,10 @@ class I18nTool {
 
     // 生成详细报告
     const report = this.logger.generateReport();
+    
+    // 生成待处理任务记录（如果有失败或跳过的项目）
+    const pendingTasksFile = this.logger.generatePendingTasks(this.config.outputDir);
+    
     console.log('\n========================================');
     console.log('转换统计:');
     console.log(`  - 提取成功: ${report.summary.extracted} 条`);

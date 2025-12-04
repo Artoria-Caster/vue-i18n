@@ -285,6 +285,163 @@ class Logger {
   }
 
   /**
+   * 生成待处理记录文件
+   * 专门记录转换失败的中文文本，方便手动处理
+   * @param {string} outputDir 输出目录
+   * @returns {string|null} 生成的文件路径，如果没有失败记录则返回null
+   */
+  generatePendingTasks(outputDir) {
+    // 如果没有失败记录，则不生成文件
+    if (this.logs.failed.length === 0) {
+      return null;
+    }
+
+    try {
+      // 确保输出目录存在
+      if (!fs.existsSync(outputDir)) {
+        fs.mkdirSync(outputDir, { recursive: true });
+      }
+
+      const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
+      const pendingFilePath = path.join(outputDir, `pending-tasks-${timestamp}.md`);
+
+      // 生成Markdown格式的待处理任务文件
+      let content = `# Vue i18n 转换待处理任务\n\n`;
+      content += `> 生成时间: ${new Date().toLocaleString('zh-CN')}\n\n`;
+      content += `本文件记录了在i18n转换过程中**失败**的中文文本，需要手动处理。\n\n`;
+      content += `> 注：console.log和注释中的文本已被主动跳过，不会出现在此列表中。\n\n`;
+
+      // 统计信息
+      content += `## 📊 统计概览\n\n`;
+      content += `- **需要手动处理**: ${this.logs.failed.length} 条\n\n`;
+
+      // 统计信息
+      content += `## 📊 统计概览\n\n`;
+      content += `- **需要手动处理**: ${this.logs.failed.length} 条\n\n`;
+
+      // 转换失败的记录
+      content += `## ❌ 转换失败 - 需要手动处理\n\n`;
+      content += `以下文本在自动替换过程中失败，需要手动处理：\n\n`;
+
+      // 按文件分组
+      const failedByFile = {};
+      this.logs.failed.forEach(item => {
+        if (!failedByFile[item.filePath]) {
+          failedByFile[item.filePath] = [];
+        }
+        failedByFile[item.filePath].push(item);
+      });
+
+      let index = 1;
+      for (const [filePath, items] of Object.entries(failedByFile)) {
+        content += `### ${index}. \`${filePath}\`\n\n`;
+        
+        // 去重（同一行号的重复记录只显示一次）
+        const uniqueItems = [];
+        const seenLines = new Set();
+        for (const item of items) {
+          const key = `${item.line}-${item.original}`;
+          if (!seenLines.has(key)) {
+            seenLines.add(key);
+            uniqueItems.push(item);
+          }
+        }
+        
+        uniqueItems.forEach(item => {
+          content += `- **行号**: ${item.line}\n`;
+          content += `  - **原文**: \`${item.original}\`\n`;
+          content += `  - **原因**: ${item.reason}\n`;
+          content += `  - **处理状态**: [ ] 待处理\n\n`;
+        });
+        index++;
+      }
+
+      // 处理建议
+      content += `\n---\n\n`;
+      content += `## 💡 处理建议\n\n`;
+      content += `### 常见失败原因及解决方法\n\n`;
+      content += `#### 1. 未找到匹配的文本\n`;
+      content += `**原因**: 文本格式在替换前发生了变化，或包含特殊字符导致匹配失败\n\n`;
+      content += `**解决方法**:\n`;
+      content += `- 手动定位到对应文件和行号\n`;
+      content += `- 查看实际的文本内容\n`;
+      content += `- 手动添加 \`$t()\` 调用\n\n`;
+      content += `**示例**:\n`;
+      content += `\`\`\`vue\n`;
+      content += `<!-- 修改前 -->\n`;
+      content += `<span>{{ currentProduct.stock }}件</span>\n\n`;
+      content += `<!-- 修改后 -->\n`;
+      content += `<span>{{ currentProduct.stock }}{{ $t('common.unit') }}</span>\n`;
+      content += `\`\`\`\n\n`;
+      content += `#### 2. 复杂模板表达式\n`;
+      content += `**原因**: 包含变量插值的复杂文本\n\n`;
+      content += `**解决方法**: 使用 i18n 的参数插值功能\n\n`;
+      content += `**示例**:\n`;
+      content += `\`\`\`javascript\n`;
+      content += `// 语言包添加\n`;
+      content += `{\n`;
+      content += `  "welcome": "您好，{name}！今天是{date}，祝您工作愉快！"\n`;
+      content += `}\n\n`;
+      content += `// 模板中使用\n`;
+      content += `{{ $t('welcome', { name: userName, date: todayDate }) }}\n`;
+      content += `\`\`\`\n\n`;
+      content += `### 手动处理流程\n\n`;
+      content += `1. **定位文件**: 根据上面列出的文件路径打开对应文件\n`;
+      content += `2. **跳转行号**: 在 VS Code 中按 \`Ctrl+G\` 输入行号快速跳转\n`;
+      content += `3. **查看上下文**: 了解文本的实际使用场景\n`;
+      content += `4. **添加翻译**:\n`;
+      content += `   - 在语言包文件中添加对应的 key 和翻译\n`;
+      content += `   - 在源文件中使用 \`$t('key')\` 替换原文\n`;
+      content += `5. **标记完成**: 在本文件中的 \`[ ]\` 打勾标记为 \`[x]\`\n`;
+      content += `6. **运行验证**:\n`;
+      content += `   \`\`\`bash\n`;
+      content += `   node src/index.js validate\n`;
+      content += `   \`\`\`\n\n`;
+      content += `### 快捷操作提示\n\n`;
+      content += `- **VS Code 快速跳转**: \`Ctrl+P\` 输入文件名，\`:行号\` 跳转到指定行\n`;
+      content += `- **搜索文本**: \`Ctrl+F\` 在当前文件中搜索原文\n`;
+      content += `- **全局搜索**: \`Ctrl+Shift+F\` 在整个项目中搜索\n\n`;
+
+      // 写入文件
+      fs.writeFileSync(pendingFilePath, content, 'utf-8');
+
+      // 同时生成JSON格式的数据文件，方便程序化处理
+      const jsonFilePath = path.join(outputDir, `pending-tasks-${timestamp}.json`);
+      
+      // JSON中也去重
+      const uniqueFailed = [];
+      const seenKeys = new Set();
+      for (const item of this.logs.failed) {
+        const key = `${item.filePath}-${item.line}-${item.original}`;
+        if (!seenKeys.has(key)) {
+          seenKeys.add(key);
+          uniqueFailed.push(item);
+        }
+      }
+      
+      const jsonData = {
+        generatedAt: new Date().toISOString(),
+        summary: {
+          failed: uniqueFailed.length,
+          total: uniqueFailed.length
+        },
+        failed: uniqueFailed
+      };
+      fs.writeFileSync(jsonFilePath, JSON.stringify(jsonData, null, 2), 'utf-8');
+
+      console.log(`\n📝 待处理任务记录已生成:`);
+      console.log(`   Markdown: ${pendingFilePath}`);
+      console.log(`   JSON: ${jsonFilePath}`);
+      console.log(`   需要手动处理: ${uniqueFailed.length} 条`);
+
+      return pendingFilePath;
+    } catch (error) {
+      this.error('生成待处理任务文件失败', { error: error.message });
+      return null;
+    }
+  }
+
+  /**
    * 清空日志
    */
   clear() {

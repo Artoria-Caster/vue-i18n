@@ -6,7 +6,45 @@
 
 ### 新增功能 ✨
 
-#### 1. 详细日志记录功能
+#### 1. 待处理任务记录功能 🆕
+**文件**: `src/utils/logger.js` - `generatePendingTasks()` 方法
+
+自动生成单独的待处理任务记录文件，方便手动处理转换失败的文本：
+
+**功能特点**:
+- 自动在完整流程中生成（只要有失败或跳过的记录）
+- 生成两种格式：
+  - **Markdown** (`pending-tasks-{timestamp}.md`): 便于阅读和标记处理状态
+  - **JSON** (`pending-tasks-{timestamp}.json`): 便于程序化处理
+- 详细记录：
+  - ❌ **转换失败**: 文件路径、行号、原文、失败原因、时间戳、处理状态复选框
+  - ⏭️ **跳过处理**: 按原因分类，包含文件路径、行号、文本内容、所在区域
+- 内置处理建议和完整的手动处理流程指导
+
+**使用方式**:
+```bash
+# 运行完整流程，自动生成待处理任务
+node src/index.js full
+
+# 查看生成的待处理任务
+code output/pending-tasks-*.md
+```
+
+**配置选项** (`config.json`):
+```json
+{
+  "pendingTasks": {
+    "enabled": true,
+    "outputFormat": ["markdown", "json"],
+    "includeSkipped": true,
+    "includeFailed": true
+  }
+}
+```
+
+详细文档: [docs/PENDING_TASKS.md](./docs/PENDING_TASKS.md)
+
+#### 2. 详细日志记录功能
 **文件**: `src/utils/logger.js`
 
 - 记录所有提取的文本及其位置信息
@@ -20,7 +58,7 @@
 - 文件: 所有级别，保存在 `logs/` 目录
 - 文件名格式: `i18n-conversion-YYYY-MM-DDTHH-mm-ss.log`
 
-#### 2. 转换后验证功能
+#### 3. 转换后验证功能
 **文件**: `src/validator/index.js`
 
 - 自动检查转换后的文件是否还有未转换的中文

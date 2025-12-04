@@ -23,6 +23,7 @@
 - ✅ **智能Key生成**: 支持语义化和hash两种key生成策略
 - ✅ **自动替换**: 可选的自动替换功能，将中文转换为i18n调用
 - ✅ **安全备份**: 替换前自动备份，支持预览模式
+- ✅ **待处理任务记录**: 自动生成转换失败和跳过项的详细记录，方便手动处理
 
 ## 项目结构
 
@@ -400,12 +401,37 @@ MIT License
 
 ### 最新版本亮点 (2025-12-04)
 
+- ✅ **待处理任务记录**: 自动生成转换失败和跳过项的详细记录文件（Markdown + JSON）
 - ✅ **详细日志记录**: 记录所有提取和替换操作，生成详细报告
 - ✅ **转换后验证**: 自动检查是否有遗漏的中文，生成验证报告
 - ✅ **混合内容处理**: 增强对混合文本和标签的处理能力
 - ✅ **循环引用修复**: 修复语言包文件被错误替换导致循环引用的问题
 - ✅ **Vue2完全兼容**: 使用 vue-template-compiler 完整支持 Vue 2
 
+### 📝 待处理任务记录功能
+
+当运行完整流程时，工具会自动生成待处理任务记录文件，包含所有转换失败和跳过处理的文本：
+
+```bash
+node src/index.js full
+```
+
+生成的文件：
+- `output/pending-tasks-{timestamp}.md` - Markdown格式，便于阅读和标记处理状态
+- `output/pending-tasks-{timestamp}.json` - JSON格式，便于程序化处理
+
+**查看待处理任务**:
+```bash
+# 查看Markdown文件（推荐）
+code output/pending-tasks-*.md
+
+# 或使用cat命令
+cat output/pending-tasks-*.md
+```
+
+详细使用说明请查看：[docs/PENDING_TASKS.md](./docs/PENDING_TASKS.md)
+
 ## 联系方式
 
 如有问题或建议，请提交Issue。
+
