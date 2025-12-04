@@ -1,101 +1,101 @@
 <template>
   <div class="settings-page">
-    <h2>系统设置</h2>
+    <h2>{{ $t('common.textgar1ro') }}</h2>
 
     <el-card class="settings-card">
       <el-tabs tab-position="left">
-        <el-tab-pane label="基本设置">
+        <el-tab-pane :label="$t('common.textbj9c9u')">
           <div class="settings-section">
-            <h3>基本信息</h3>
+            <h3>{{ $t('common.textbiyzkw') }}</h3>
             <el-form :model="basicSettings" label-width="120px">
-              <el-form-item label="系统名称">
-                <el-input v-model="basicSettings.systemName" placeholder="请输入系统名称" />
+              <el-form-item :label="$t('common.textgahjnr')">
+                <el-input v-model="basicSettings.systemName" :placeholder="$t('common.texth8lh74')" />
               </el-form-item>
-              <el-form-item label="系统版本">
+              <el-form-item :label="$t('common.textgaml2g')">
                 <el-input v-model="basicSettings.version" disabled />
               </el-form-item>
-              <el-form-item label="联系电话">
-                <el-input v-model="basicSettings.phone" placeholder="请输入联系电话" />
+              <el-form-item :label="$t('common.textgpkj3j')">
+                <el-input v-model="basicSettings.phone" :placeholder="$t('common.textgtihrc')" />
               </el-form-item>
-              <el-form-item label="联系邮箱">
-                <el-input v-model="basicSettings.email" placeholder="请输入联系邮箱" />
+              <el-form-item :label="$t('common.textgpp44q')">
+                <el-input v-model="basicSettings.email" :placeholder="$t('common.textgtdwq5')" />
               </el-form-item>
               <el-form-item>
-                <el-button type="primary" @click="saveBasicSettings">保存设置</el-button>
-                <el-button @click="resetBasicSettings">重置</el-button>
+                <el-button type="primary" @click="saveBasicSettings">{{ $t('common.textagor7v') }}</el-button>
+                <el-button @click="resetBasicSettings">{{ $t('common.reset') }}</el-button>
               </el-form-item>
             </el-form>
           </div>
         </el-tab-pane>
 
-        <el-tab-pane label="安全设置">
+        <el-tab-pane :label="$t('common.textbw89m7')">
           <div class="settings-section">
-            <h3>安全配置</h3>
+            <h3>{{ $t('common.textbw97nk') }}</h3>
             <el-form :model="securitySettings" label-width="150px">
-              <el-form-item label="密码最小长度">
+              <el-form-item :label="$t('common.textscr9ox')">
                 <el-input-number v-model="securitySettings.minPasswordLength" :min="6" :max="20" />
-                <span class="form-tip">建议设置为8位以上</span>
+                <span class="form-tip">{{ $t('common.textcspz4g') }}</span>
               </el-form-item>
-              <el-form-item label="登录失败次数限制">
+              <el-form-item :label="$t('common.text9ax57h')">
                 <el-input-number v-model="securitySettings.maxLoginAttempts" :min="3" :max="10" />
-                <span class="form-tip">超过此次数将锁定账号</span>
+                <span class="form-tip">{{ $t('common.text1h7i7z') }}</span>
               </el-form-item>
-              <el-form-item label="会话超时时间">
+              <el-form-item :label="$t('common.text4fmnzi')">
                 <el-input-number v-model="securitySettings.sessionTimeout" :min="5" :max="120" />
-                <span class="form-tip">单位：分钟</span>
+                <span class="form-tip">{{ $t('common.texti9yq3p') }}</span>
               </el-form-item>
-              <el-form-item label="启用双因素认证">
+              <el-form-item :label="$t('common.text3jp7rk')">
                 <el-switch v-model="securitySettings.twoFactorAuth" />
               </el-form-item>
               <el-form-item>
-                <el-button type="primary" @click="saveSecuritySettings">保存设置</el-button>
+                <el-button type="primary" @click="saveSecuritySettings">{{ $t('common.textagor7v') }}</el-button>
               </el-form-item>
             </el-form>
           </div>
         </el-tab-pane>
 
-        <el-tab-pane label="通知设置">
+        <el-tab-pane :label="$t('common.textioju7v')">
           <div class="settings-section">
-            <h3>通知配置</h3>
+            <h3>{{ $t('common.textioks98') }}</h3>
             <el-form :model="notificationSettings" label-width="150px">
-              <el-form-item label="邮件通知">
+              <el-form-item :label="$t('common.textil776b')">
                 <el-switch v-model="notificationSettings.emailEnabled" />
-                <span class="form-tip">开启后将接收邮件通知</span>
+                <span class="form-tip">{{ $t('common.textohocyz') }}</span>
               </el-form-item>
-              <el-form-item label="短信通知">
+              <el-form-item :label="$t('common.textfgxpjz')">
                 <el-switch v-model="notificationSettings.smsEnabled" />
-                <span class="form-tip">开启后将接收短信通知</span>
+                <span class="form-tip">{{ $t('common.textldevcn') }}</span>
               </el-form-item>
-              <el-form-item label="系统消息">
+              <el-form-item :label="$t('common.textgalqnf')">
                 <el-switch v-model="notificationSettings.systemMessageEnabled" />
               </el-form-item>
-              <el-form-item label="通知方式">
+              <el-form-item :label="$t('common.textiod70h')">
                 <el-checkbox-group v-model="notificationSettings.methods">
-                  <el-checkbox label="order">订单通知</el-checkbox>
-                  <el-checkbox label="system">系统通知</el-checkbox>
-                  <el-checkbox label="promotion">促销通知</el-checkbox>
+                  <el-checkbox label="order">{{ $t('common.texthyx9vi') }}</el-checkbox>
+                  <el-checkbox label="system">{{ $t('common.textgarqz3') }}</el-checkbox>
+                  <el-checkbox label="promotion">{{ $t('common.textaoovhk') }}</el-checkbox>
                 </el-checkbox-group>
               </el-form-item>
               <el-form-item>
-                <el-button type="primary" @click="saveNotificationSettings">保存设置</el-button>
+                <el-button type="primary" @click="saveNotificationSettings">{{ $t('common.textagor7v') }}</el-button>
               </el-form-item>
             </el-form>
           </div>
         </el-tab-pane>
 
-        <el-tab-pane label="关于系统">
+        <el-tab-pane :label="$t('common.textaly1of')">
           <div class="settings-section">
-            <h3>系统信息</h3>
+            <h3>{{ $t('common.textgagp2q') }}</h3>
             <div class="about-info">
-              <p><strong>系统名称：</strong>企业管理系统</p>
-              <p><strong>当前版本：</strong>v1.0.0</p>
-              <p><strong>发布日期：</strong>2024年1月15日</p>
-              <p><strong>开发团队：</strong>技术研发部</p>
-              <p><strong>技术支持：</strong>support@example.com</p>
-              <p><strong>官方网站：</strong>https://www.example.com</p>
+              <p><strong>系统名称：</strong>{{ $t('common.texto63gaq') }}</p>
+              <p><strong>{{ $t('common.textsf5ogs') }}</strong>v1.0.0</p>
+              <p><strong>发布日期：</strong>{{ $t('common.text5ubhu2') }}</p>
+              <p><strong>开发团队：</strong>{{ $t('common.textrjdf44') }}</p>
+              <p><strong>{{ $t('common.textrm1v1j') }}</strong>support@example.com</p>
+              <p><strong>{{ $t('common.textgc8zht') }}</strong>https://www.example.com</p>
               <div class="update-check">
-                <el-button type="primary" @click="checkUpdate">检查更新</el-button>
-                <span class="update-status">当前已是最新版本</span>
+                <el-button type="primary" @click="checkUpdate">{{ $t('common.textdnckrl') }}</el-button>
+                <span class="update-status">{{ $t('common.text1mi4q3') }}</span>
               </div>
             </div>
           </div>
@@ -111,7 +111,7 @@ export default {
   data() {
     return {
       basicSettings: {
-        systemName: '企业管理系统',
+        systemName: this.$t('common.texto63gaq'),
         version: 'v1.0.0',
         phone: '400-888-8888',
         email: 'support@example.com'
@@ -132,45 +132,44 @@ export default {
   },
   methods: {
     saveBasicSettings() {
-      this.$message.success('基本设置保存成功');
+      this.$message.success(this.$t('common.textmf4w98'));
     },
     resetBasicSettings() {
-      this.$confirm('确定要重置基本设置吗？', '重置确认', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
+      this.$confirm(this.$t('common.textlwfq74'), this.$t('common.textixa41j'), {
+        confirmButtonText: this.$t('common.confirm'),
+        cancelButtonText: this.$t('common.cancel'),
         type: 'warning'
       }).then(() => {
         this.basicSettings = {
-          systemName: '企业管理系统',
+          systemName: this.$t('common.texto63gaq'),
           version: 'v1.0.0',
           phone: '400-888-8888',
           email: 'support@example.com'
         };
-        this.$message.success('已重置为默认设置');
+        this.$message.success(this.$t('common.textdc3djx'));
       }).catch(() => {
-        this.$message.info('已取消重置');
+        this.$message.info(this.$t('common.textn7iqzp'));
       });
     },
     saveSecuritySettings() {
-      this.$message.success('安全设置保存成功');
-      console.log('安全设置已更新：', this.securitySettings);
+      this.$message.success(this.$t('common.textsv0t0n'));
+      console.log(this.$t('common.textr1c59h'), this.securitySettings);
     },
     saveNotificationSettings() {
-      this.$message.success('通知设置保存成功');
-      console.log('通知设置已更新：', this.notificationSettings);
+      this.$message.success(this.$t('common.textcfzcit'));
+      console.log(this.$t('common.texte9o09z'), this.notificationSettings);
     },
     checkUpdate() {
-      this.$message.info('正在检查更新...');
+      this.$message.info(this.$t('common.text2rsqg8'));
       setTimeout(() => {
-        this.$message.success('当前已是最新版本');
+        this.$message.success(this.$t('common.text1mi4q3'));
       }, 1000);
     }
   },
   mounted() {
-    console.log('系统设置页面加载完成');
+    console.log(this.$t('common.text8kpqji'));
   }
-};
-</script>
+};</script>
 
 <style scoped>
 .settings-page {

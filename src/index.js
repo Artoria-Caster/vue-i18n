@@ -5,6 +5,7 @@ const Scanner = require('./scanner');
 const Extractor = require('./extractor');
 const Generator = require('./generator');
 const I18nGenerator = require('./generator/i18nGenerator');
+const LocaleGenerator = require('./generator/localeGenerator');
 const Replacer = require('./replacer');
 const Logger = require('./utils/logger');
 const Validator = require('./validator');
@@ -25,6 +26,7 @@ class I18nTool {
     this.extractor = new Extractor(this.config, this.logger);
     this.generator = new Generator(this.config);
     this.i18nGenerator = new I18nGenerator(this.config);
+    this.localeGenerator = new LocaleGenerator(this.config);
     this.replacer = new Replacer(this.config, this.logger);
     this.validator = new Validator(this.config, this.logger);
   }
@@ -92,6 +94,11 @@ class I18nTool {
     console.log('\n步骤 3/3: 生成JSON文件...');
     const results = this.extractor.getResults();
     const outputPath = await this.generator.generate(results);
+
+    // 4. 生成语言包文件和翻译对照文件
+    console.log('\n步骤 4/4: 生成语言包文件...');
+    const outputDir = path.dirname(outputPath);
+    await this.localeGenerator.generate(results, outputDir);
 
     console.log('========================================');
     console.log('提取完成！');

@@ -74,18 +74,21 @@ class I18nGenerator {
     const keyMap = {};
     const messages = {};
 
-    // 处理普通文本
-    for (const [path, text] of Object.entries(extractedData.normal)) {
-      const key = this.generateKey(text, path);
+    // 处理普通文本 - 直接使用JSON中已生成的key
+    for (const [path, data] of Object.entries(extractedData.normal)) {
+      const text = typeof data === 'string' ? data : data.text;
+      const key = typeof data === 'string' ? this.generateKey(text, path) : data.key;
+      
       keyMap[path] = key;
       
       // 将key按层级拆分存储
       this.setNestedValue(messages, key, text);
     }
 
-    // 处理模板文本
+    // 处理模板文本 - 直接使用JSON中已生成的key
     for (const [path, info] of Object.entries(extractedData.templates)) {
-      const key = this.generateKey(info.original, path);
+      const key = info.key || this.generateKey(info.original, path);
+      
       keyMap[path] = {
         key,
         variables: info.variables,

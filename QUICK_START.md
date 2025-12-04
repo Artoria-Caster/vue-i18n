@@ -55,6 +55,36 @@ npm start
 }
 ```
 
+**同时自动生成：**
+
+1. **`output/zh-CN.js`** - 中文语言包文件
+   ```javascript
+   export default {
+     common: {
+       首页: "首页",
+       用户管理: "用户管理"
+     }
+   }
+   ```
+
+2. **`output/translation-template.txt`** - 翻译对照模板文件
+   ```
+   # 翻译对照模板
+   # 格式说明：
+   # 每行格式为：中文文本 = 翻译文本
+   # 请在等号后面填写对应的翻译内容
+   
+   首页 = 
+   用户管理 = 
+   欢迎{username}登录 = 
+   ```
+
+**使用翻译对照模板：**
+- 将 `translation-template.txt` 发送给翻译人员
+- 翻译人员在等号后填写对应的翻译内容
+- 例如：`首页 = Home`
+- 支持变量占位符，如：`欢迎{username}登录 = Welcome {username}`
+
 ### 第五步：生成i18n配置（可选）
 
 ```bash

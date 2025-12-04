@@ -2,45 +2,45 @@
   <div class="home-page">
     <el-card class="welcome-card">
       <div slot="header" class="card-header">
-        <h2>欢迎使用企业管理系统</h2>
+        <h2>{{ $t('common.textxmdczt') }}</h2>
         <span>{{ currentTime }}</span>
       </div>
       <div class="welcome-content">
-        <p>您好，{{ userName }}！今天是{{ todayDate }}，祝您工作愉快！</p>
-        <p class="tips">系统提示：{{ systemTip }}</p>
+        <p>{{ $t('common.text60lrwy', { userName: userName, todayDate: todayDate }) }}</p>
+        <p class="tips">{{ $t('common.textgqa3dk', { systemTip: systemTip }) }}</p>
       </div>
     </el-card>
 
     <div class="statistics-grid">
       <el-card class="stat-card">
         <div class="stat-item">
-          <div class="stat-label">今日访问量</div>
+          <div class="stat-label">{{ $t('common.textxneye3') }}</div>
           <div class="stat-value">{{ todayVisits }}</div>
-          <div class="stat-desc">比昨日增长{{ visitGrowth }}%</div>
+          <div class="stat-desc">{{ $t('common.textlu1dl5', { visitGrowth: visitGrowth }) }}</div>
         </div>
       </el-card>
 
       <el-card class="stat-card">
         <div class="stat-item">
-          <div class="stat-label">待处理订单</div>
+          <div class="stat-label">{{ $t('common.textu1jgmy') }}</div>
           <div class="stat-value">{{ pendingOrders }}</div>
-          <div class="stat-desc">{{ pendingOrders > 0 ? '请及时处理' : '暂无待处理订单' }}</div>
+          <div class="stat-desc">{{ pendingOrders > 0 ? $t('common.text9zqjdn') : $t('common.text9uk89w') }}</div>
         </div>
       </el-card>
 
       <el-card class="stat-card">
         <div class="stat-item">
-          <div class="stat-label">用户总数</div>
+          <div class="stat-label">{{ $t('common.textf6tfqc') }}</div>
           <div class="stat-value">{{ totalUsers }}</div>
-          <div class="stat-desc">本月新增{{ newUsersThisMonth }}人</div>
+          <div class="stat-desc">{{ $t('common.textqyu36m', { newUsersThisMonth: newUsersThisMonth }) }}</div>
         </div>
       </el-card>
 
       <el-card class="stat-card">
         <div class="stat-item">
-          <div class="stat-label">商品总数</div>
+          <div class="stat-label">{{ $t('common.textb42tjk') }}</div>
           <div class="stat-value">{{ totalProducts }}</div>
-          <div class="stat-desc">库存充足</div>
+          <div class="stat-desc">{{ $t('common.textcb7kkz') }}</div>
         </div>
       </el-card>
     </div>
@@ -48,8 +48,8 @@
     <div class="content-grid">
       <el-card class="notice-card">
         <div slot="header">
-          <span>系统公告</span>
-          <el-button type="text" @click="viewMoreNotices">查看更多</el-button>
+          <span>{{ $t('common.textgagw4i') }}</span>
+          <el-button type="text" @click="viewMoreNotices">{{ $t('common.textdlojqk') }}</el-button>
         </div>
         <div class="notice-list">
           <div v-for="(notice, index) in notices" :key="index" class="notice-item">
@@ -60,12 +60,12 @@
       </el-card>
 
       <el-card class="quick-actions-card">
-        <div slot="header">快捷操作</div>
+        <div slot="header">{{ $t('common.textcil0yj') }}</div>
         <div class="actions-grid">
-          <el-button type="primary" icon="el-icon-plus" @click="addUser">添加用户</el-button>
-          <el-button type="success" icon="el-icon-upload" @click="uploadProduct">上传商品</el-button>
-          <el-button type="warning" icon="el-icon-download" @click="exportData">导出数据</el-button>
-          <el-button type="info" icon="el-icon-setting" @click="systemSettings">系统设置</el-button>
+          <el-button type="primary" icon="el-icon-plus" @click="addUser">{{ $t('common.texte81syc') }}</el-button>
+          <el-button type="success" icon="el-icon-upload" @click="uploadProduct">{{ $t('common.texta6cmxd') }}</el-button>
+          <el-button type="warning" icon="el-icon-download" @click="exportData">{{ $t('common.textby61a4') }}</el-button>
+          <el-button type="info" icon="el-icon-setting" @click="systemSettings">{{ $t('common.textgar1ro') }}</el-button>
         </div>
       </el-card>
     </div>
@@ -77,10 +77,10 @@ export default {
   name: 'HomePage',
   data() {
     return {
-      userName: '管理员',
+      userName: this.$t('common.textio38z'),
       currentTime: '',
       todayDate: '',
-      systemTip: '请定期检查系统安全设置',
+      systemTip: this.$t('common.texta8ook4'),
       todayVisits: 1234,
       visitGrowth: 15.8,
       pendingOrders: 28,
@@ -88,42 +88,42 @@ export default {
       newUsersThisMonth: 234,
       totalProducts: 892,
       notices: [
-        { title: '系统将于今晚22:00进行维护', time: '2024-01-15 10:00' },
-        { title: '新版本功能介绍', time: '2024-01-14 15:30' },
-        { title: '关于优化系统性能的通知', time: '2024-01-13 09:00' }
-      ]
+      { title: this.$t('common.textzbpbxd'), time: '2024-01-15 10:00' },
+      { title: this.$t('common.text3feylw'), time: '2024-01-14 15:30' },
+      { title: this.$t('common.textyp6np8'), time: '2024-01-13 09:00' }]
+
     };
   },
   methods: {
     updateTime() {
       const now = new Date();
       this.currentTime = now.toLocaleTimeString('zh-CN');
-      this.todayDate = now.toLocaleDateString('zh-CN', { 
-        year: 'numeric', 
-        month: 'long', 
+      this.todayDate = now.toLocaleDateString('zh-CN', {
+        year: 'numeric',
+        month: 'long',
         day: 'numeric',
         weekday: 'long'
       });
     },
     viewMoreNotices() {
-      this.$message.info('查看更多公告功能开发中');
+      this.$message.info(this.$t('common.text2pb6gk'));
     },
     addUser() {
       this.$router.push('/user');
-      this.showSuccess('跳转到用户管理页面');
+      this.showSuccess(this.$t('common.texthwxajc'));
     },
     uploadProduct() {
-      this.$message.success('打开商品上传对话框');
+      this.$message.success(this.$t('common.textdqo7rw'));
     },
     exportData() {
-      this.$confirm('确认要导出所有数据吗？', '导出确认', {
-        confirmButtonText: '确认导出',
-        cancelButtonText: '取消',
+      this.$confirm(this.$t('common.textesi514'), this.$t('common.textby9his'), {
+        confirmButtonText: this.$t('common.textfrq4ms'),
+        cancelButtonText: this.$t('common.cancel'),
         type: 'warning'
       }).then(() => {
-        this.$message.success('数据导出成功');
+        this.$message.success(this.$t('common.textinblv9'));
       }).catch(() => {
-        this.$message.info('已取消导出');
+        this.$message.info(this.$t('common.textn79cgy'));
       });
     },
     systemSettings() {
@@ -133,15 +133,14 @@ export default {
   mounted() {
     this.updateTime();
     this.timer = setInterval(this.updateTime, 1000);
-    console.log('首页加载完成');
+    console.log(this.$t('common.textq7llq8'));
   },
   beforeDestroy() {
     if (this.timer) {
       clearInterval(this.timer);
     }
   }
-};
-</script>
+};</script>
 
 <style scoped>
 .home-page {

@@ -1,4 +1,5 @@
 const Parser = require('../parser');
+const KeyGenerator = require('../utils/keyGenerator');
 
 /**
  * 中文文本提取器
@@ -9,6 +10,7 @@ class Extractor {
     this.config = config;
     this.parser = new Parser();
     this.logger = logger;
+    this.keyGenerator = new KeyGenerator(config);
     this.results = {
       normal: {},
       templates: {}
@@ -183,9 +185,13 @@ class Extractor {
     for (const match of matches) {
       const chineseText = match[0];
       if (chineseText && chineseText.length > 0) {
-        // 为每个中文片段创建唯一的key
-        const uniqueKey = `${relativePath}::template::line:${lineNumber}::mixed:${extractCount}`;
-        this.results.normal[uniqueKey] = chineseText;
+        // 为每个中文片段创建唯一的path
+        const uniquePath = `${relativePath}::template::line:${lineNumber}::mixed:${extractCount}`;
+        const key = this.keyGenerator.generateKey(chineseText, uniquePath);
+        this.results.normal[uniquePath] = {
+          text: chineseText,
+          key: key
+        };
         extractCount++;
         
         if (this.logger) {
@@ -367,8 +373,12 @@ class Extractor {
    * @param {number} line
    */
   addNormalString(text, filePath, section, line) {
-    const key = `${filePath}::${section}::line:${line}`;
-    this.results.normal[key] = text;
+    const path = `${filePath}::${section}::line:${line}`;
+    const key = this.keyGenerator.generateKey(text, path);
+    this.results.normal[path] = {
+      text: text,
+      key: key
+    };
   }
 
   /**
@@ -388,9 +398,13 @@ class Extractor {
       const str = match[1];
       // 只提取包含中文的字符串
       if (str && chineseRegex.test(str)) {
-        // 使用唯一的key，避免同一行多个字符串互相覆盖
-        const uniqueKey = `${filePath}::template::line:${line}::str:${index}`;
-        this.results.normal[uniqueKey] = str;
+        // 使用唯一的path，避免同一行多个字符串互相覆盖
+        const uniquePath = `${filePath}::template::line:${line}::str:${index}`;
+        const key = this.keyGenerator.generateKey(str, uniquePath);
+        this.results.normal[uniquePath] = {
+          text: str,
+          key: key
+        };
         index++;
       }
     }
@@ -406,7 +420,7 @@ class Extractor {
    * @param {Array} fullPaths 完整变量路径
    */
   addTemplateString(text, filePath, section, line, variables = [], fullPaths = []) {
-    const key = `${filePath}::${section}::line:${line}`;
+    const path = `${filePath}::${section}::line:${line}`;
     
     // 提取Vue插值表达式中的变量
     if (text.includes('{{') && text.includes('}}')) {
@@ -430,11 +444,14 @@ class Extractor {
       }
     }
 
-    this.results.templates[key] = {
+    const key = this.keyGenerator.generateKey(text, path);
+
+    this.results.templates[path] = {
       original: text,
       type: '__TEMPLATE__',
       variables,
-      fullPaths: fullPaths.length > 0 ? fullPaths : variables // 保存完整路径
+      fullPaths: fullPaths.length > 0 ? fullPaths : variables, // 保存完整路径
+      key: key
     };
   }
 

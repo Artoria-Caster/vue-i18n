@@ -1,19 +1,19 @@
 <template>
   <div id="app">
     <div class="header">
-      <h1>企业管理系统</h1>
+      <h1>{{ $t('common.texto63gaq') }}</h1>
       <div class="user-info">
-        <span>欢迎，{{ username }}</span>
-        <el-button type="text" @click="handleLogout">退出登录</el-button>
+        <span>{{ $t('common.textzhuakq', { username: username }) }}</span>
+        <el-button type="text" @click="handleLogout">{{ $t('common.textiifi5w') }}</el-button>
       </div>
     </div>
     
     <div class="nav-menu">
-      <router-link to="/">首页</router-link>
-      <router-link to="/user">用户管理</router-link>
-      <router-link to="/product">商品管理</router-link>
-      <router-link to="/order">订单管理</router-link>
-      <router-link to="/settings">系统设置</router-link>
+      <router-link to="/">{{ $t('common.home') }}</router-link>
+      <router-link to="/user">{{ $t('common.textf6y6dw') }}</router-link>
+      <router-link to="/product">{{ $t('common.textb47k74') }}</router-link>
+      <router-link to="/order">{{ $t('common.texthytrqw') }}</router-link>
+      <router-link to="/settings">{{ $t('common.textgar1ro') }}</router-link>
     </div>
     
     <div class="main-content">
@@ -21,8 +21,8 @@
     </div>
     
     <div class="footer">
-      <p>版权所有 © 2024 企业管理系统</p>
-      <p>技术支持：开发团队</p>
+      <p>{{ $t('common.text5hishd') }}</p>
+      <p>{{ $t('common.textkxuord') }}</p>
     </div>
   </div>
 </template>
@@ -32,31 +32,30 @@ export default {
   name: 'App',
   data() {
     return {
-      username: '张三',
-      appTitle: '企业管理系统',
+      username: this.$t('common.textglwp'),
+      appTitle: this.$t('common.texto63gaq'),
       version: 'v1.0.0'
     };
   },
   methods: {
     handleLogout() {
-      this.$confirm('确定要退出登录吗？', '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
+      this.$confirm(this.$t('common.textpjs3rj'), this.$t('common.tips'), {
+        confirmButtonText: this.$t('common.confirm'),
+        cancelButtonText: this.$t('common.cancel'),
         type: 'warning'
       }).then(() => {
-        this.$message.success('退出成功');
+        this.$message.success(this.$t('common.textiibymh'));
         this.$router.push('/login');
       }).catch(() => {
-        this.$message.info('已取消退出');
+        this.$message.info(this.$t('common.textn7i6zi'));
       });
     }
   },
   mounted() {
-    console.log('应用已加载完成');
+    console.log(this.$t('common.textpztg5b'));
     console.log(`当前版本：${this.version}`);
   }
-};
-</script>
+};</script>
 
 <style>
 * {

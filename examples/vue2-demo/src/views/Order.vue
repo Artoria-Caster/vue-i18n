@@ -1,18 +1,18 @@
 <template>
   <div class="order-management">
-    <h2>订单管理</h2>
+    <h2>{{ $t('common.texthytrqw') }}</h2>
 
     <el-tabs v-model="activeTab" @tab-click="handleTabClick">
-      <el-tab-pane label="全部订单" name="all">
+      <el-tab-pane :label="$t('common.textavj59v')" name="all">
         <order-list :orders="allOrders" :status-filter="'all'" />
       </el-tab-pane>
-      <el-tab-pane label="待支付" name="pending">
+      <el-tab-pane :label="$t('common.textehbda')" name="pending">
         <order-list :orders="pendingOrders" :status-filter="'pending'" />
       </el-tab-pane>
-      <el-tab-pane label="已完成" name="completed">
+      <el-tab-pane :label="$t('common.texte7hbq')" name="completed">
         <order-list :orders="completedOrders" :status-filter="'completed'" />
       </el-tab-pane>
-      <el-tab-pane label="已取消" name="cancelled">
+      <el-tab-pane :label="$t('common.texte68dg')" name="cancelled">
         <order-list :orders="cancelledOrders" :status-filter="'cancelled'" />
       </el-tab-pane>
     </el-tabs>
@@ -31,45 +31,45 @@ export default {
     return {
       activeTab: 'all',
       allOrders: [
-        { 
-          id: 'ORD20240115001', 
-          customer: '张三', 
-          product: '苹果iPhone 15 Pro', 
-          amount: 7999, 
-          status: 'pending', 
-          createTime: '2024-01-15 10:30:00',
-          remark: '请尽快发货'
-        },
-        { 
-          id: 'ORD20240115002', 
-          customer: '李四', 
-          product: '华为MateBook笔记本', 
-          amount: 5999, 
-          status: 'completed', 
-          createTime: '2024-01-14 15:20:00',
-          remark: '客户要求包邮'
-        },
-        { 
-          id: 'ORD20240115003', 
-          customer: '王五', 
-          product: '耐克运动鞋', 
-          amount: 599, 
-          status: 'cancelled', 
-          createTime: '2024-01-13 09:15:00',
-          remark: '客户主动取消'
-        }
-      ]
+      {
+        id: 'ORD20240115001',
+        customer: this.$t('common.textglwp'),
+        product: this.$t('common.text1l8h93'),
+        amount: 7999,
+        status: 'pending',
+        createTime: '2024-01-15 10:30:00',
+        remark: this.$t('common.text8ya0qt')
+      },
+      {
+        id: 'ORD20240115002',
+        customer: this.$t('common.texti1ql'),
+        product: this.$t('common.text3v4pvu'),
+        amount: 5999,
+        status: 'completed',
+        createTime: '2024-01-14 15:20:00',
+        remark: this.$t('common.text1jz0ov')
+      },
+      {
+        id: 'ORD20240115003',
+        customer: this.$t('common.textk31l'),
+        product: this.$t('common.textecs6mw'),
+        amount: 599,
+        status: 'cancelled',
+        createTime: '2024-01-13 09:15:00',
+        remark: this.$t('common.text60x030')
+      }]
+
     };
   },
   computed: {
     pendingOrders() {
-      return this.allOrders.filter(order => order.status === 'pending');
+      return this.allOrders.filter((order) => order.status === 'pending');
     },
     completedOrders() {
-      return this.allOrders.filter(order => order.status === 'completed');
+      return this.allOrders.filter((order) => order.status === 'completed');
     },
     cancelledOrders() {
-      return this.allOrders.filter(order => order.status === 'cancelled');
+      return this.allOrders.filter((order) => order.status === 'cancelled');
     }
   },
   methods: {
@@ -78,11 +78,10 @@ export default {
     }
   },
   mounted() {
-    console.log('订单管理页面加载完成');
-    this.$message.info(`当前共有${this.allOrders.length}个订单`);
+    console.log(this.$t('common.textro8hay'));
+    this.$message.info(this.$t('common.textbyl2cx', { length: this.allOrders.length }));
   }
-};
-</script>
+};</script>
 
 <style scoped>
 .order-management {
