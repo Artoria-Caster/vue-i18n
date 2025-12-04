@@ -1,0 +1,35 @@
+{
+  "name": "vue-i18n-auto-tool",
+  "version": "1.0.0",
+  "description": "自动提取Vue项目中文文本并转换为i18n配置的工具",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "extract": "node src/index.js extract",
+    "generate": "node src/index.js generate",
+    "replace": "node src/index.js replace",
+    "verify": "node scripts/verify.js",
+    "test": "node scripts/verify.js"
+  },
+  "keywords": [
+    "vue",
+    "i18n",
+    "internationalization",
+    "chinese",
+    "extract"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@babel/generator": "^7.23.0",
+    "@babel/parser": "^7.23.0",
+    "@babel/traverse": "^7.23.0",
+    "@vue/compiler-sfc": "^3.3.0",
+    "glob": "^10.3.0",
+    "commander": "^11.1.0"
+  },
+  "devDependencies": {},
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}

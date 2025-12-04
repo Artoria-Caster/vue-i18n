@@ -1,0 +1,16 @@
+{
+  "name": "example-project",
+  "version": "1.0.0",
+  "description": "Vue i18n工具示例项目",
+  "main": "index.js",
+  "scripts": {
+    "serve": "vue-cli-service serve",
+    "build": "vue-cli-service build"
+  },
+  "dependencies": {
+    "vue": "^2.6.14"
+  },
+  "devDependencies": {
+    "@vue/cli-service": "^5.0.0"
+  }
+}
