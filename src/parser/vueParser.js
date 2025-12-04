@@ -1,8 +1,8 @@
-const { parse: parseVue } = require('@vue/compiler-sfc');
+const compiler = require('vue-template-compiler');
 
 /**
  * Vue文件解析器
- * 使用@vue/compiler-sfc解析Vue单文件组件
+ * 使用vue-template-compiler解析Vue2单文件组件
  */
 class VueParser {
   /**
@@ -13,20 +13,33 @@ class VueParser {
    */
   parse(content, filePath) {
     try {
-      const { descriptor, errors } = parseVue(content, {
-        filename: filePath
+      const descriptor = compiler.parseComponent(content, {
+        pad: 'line'
       });
 
-      if (errors && errors.length > 0) {
-        console.warn(`解析Vue文件时有警告 ${filePath}:`, errors);
-      }
-
-      return {
-        template: descriptor.template,
-        script: descriptor.script || descriptor.scriptSetup,
-        styles: descriptor.styles,
-        customBlocks: descriptor.customBlocks
+      // 转换为统一的格式
+      const result = {
+        template: descriptor.template ? {
+          content: descriptor.template.content,
+          loc: {
+            start: { line: descriptor.template.start || 1 },
+            end: { line: descriptor.template.end || content.split('\n').length }
+          }
+        } : null,
+        script: descriptor.script ? {
+          content: descriptor.script.content,
+          loc: {
+            start: { line: descriptor.script.start || 1 },
+            end: { line: descriptor.script.end || content.split('\n').length }
+          },
+          lang: descriptor.script.lang || 'js',
+          setup: false // Vue2 没有 setup
+        } : null,
+        styles: descriptor.styles || [],
+        customBlocks: descriptor.customBlocks || []
       };
+
+      return result;
     } catch (error) {
       console.error(`解析Vue文件失败 ${filePath}:`, error.message);
       return null;

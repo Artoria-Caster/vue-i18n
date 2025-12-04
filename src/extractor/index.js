@@ -165,7 +165,8 @@ class Extractor {
             relativePath,
             section,
             lineNumber,
-            templateInfo.variables
+            templateInfo.variables,
+            templateInfo.fullPaths // 传递完整路径信息
           );
         }
       }
@@ -191,8 +192,9 @@ class Extractor {
    * @param {string} section
    * @param {number} line
    * @param {Array} variables
+   * @param {Array} fullPaths 完整变量路径
    */
-  addTemplateString(text, filePath, section, line, variables = []) {
+  addTemplateString(text, filePath, section, line, variables = [], fullPaths = []) {
     const key = `${filePath}::${section}::line:${line}`;
     
     // 提取Vue插值表达式中的变量
@@ -200,13 +202,28 @@ class Extractor {
       const vueVars = text.match(/\{\{([^}]+)\}\}/g);
       if (vueVars) {
         variables = vueVars.map(v => v.replace(/\{\{|\}\}/g, '').trim());
+        fullPaths = variables; // Vue表达式就是完整路径
+        
+        // 跳过包含复杂表达式的模板（如三元运算符、函数调用等）
+        const hasComplexExpression = variables.some(v => {
+          return v.includes('?') || v.includes(':') || 
+                 v.includes('(') || v.includes(')') ||
+                 v.includes('>') || v.includes('<') ||
+                 v.includes('&&') || v.includes('||');
+        });
+        
+        if (hasComplexExpression) {
+          console.warn(`跳过复杂表达式: ${text.substring(0, 50)}...`);
+          return;
+        }
       }
     }
 
     this.results.templates[key] = {
       original: text,
       type: '__TEMPLATE__',
-      variables
+      variables,
+      fullPaths: fullPaths.length > 0 ? fullPaths : variables // 保存完整路径
     };
   }
 

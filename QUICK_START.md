@@ -1,11 +1,11 @@
 # 快速开始指南
 
-本指南将帮助您快速上手Vue i18n自动转换工具。
+本指南将帮助您快速上手 Vue2 i18n 自动转换工具。
 
 ## 前置要求
 
 - Node.js >= 14.0.0
-- 一个需要国际化的Vue项目
+- 一个需要国际化的 Vue 2 项目
 
 ## 5分钟快速开始
 
@@ -18,7 +18,7 @@ npm install
 
 ### 第二步：配置目标项目
 
-编辑 `config.json`，修改 `targetProject` 为你的Vue项目路径：
+编辑 `config.json`，修改 `targetProject` 为你的 Vue 2 项目路径：
 
 ```json
 {
@@ -61,8 +61,8 @@ npm start
 node src/index.js generate output/i18n-extracted-xxx.json
 ```
 
-这会在你的Vue项目中创建：
-- `src/i18n/index.js` - i18n初始化文件
+这会在你的 Vue 2 项目中创建：
+- `src/i18n/index.js` - i18n初始化文件（使用 vue-i18n@8.x）
 - `src/i18n/locales/zh-CN.js` - 中文语言包
 
 ### 第六步：手动集成i18n

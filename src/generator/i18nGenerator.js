@@ -89,11 +89,12 @@ class I18nGenerator {
       keyMap[path] = {
         key,
         variables: info.variables,
+        fullPaths: info.fullPaths || info.variables, // 保存完整路径
         original: info.original
       };
       
-      // 转换为i18n格式
-      const i18nText = this.convertToI18nFormat(info.original);
+      // 转换为i18n格式，使用安全的变量名
+      const i18nText = this.convertToI18nFormat(info.original, info.variables);
       this.setNestedValue(messages, key, i18nText);
     }
 
@@ -224,17 +225,64 @@ class I18nGenerator {
 
   /**
    * 转换为i18n格式
-   * @param {string} text
+   * @param {string} text 原始文本
+   * @param {Array} variables 变量列表
    * @returns {string}
    */
-  convertToI18nFormat(text) {
+  convertToI18nFormat(text, variables = []) {
+    let result = text;
+    
     // 将 ${var} 转换为 {var}
-    let result = text.replace(/\$\{([^}]+)\}/g, '{$1}');
+    result = result.replace(/\$\{([^}]+)\}/g, (match, varExpr) => {
+      const trimmed = varExpr.trim();
+      // 查找这个表达式在variables中的索引
+      const index = variables.findIndex(v => v.trim() === trimmed);
+      if (index >= 0) {
+        const safeVarName = this.generateSafeVarName(variables[index], index);
+        return `{${safeVarName}}`;
+      }
+      return `{${trimmed}}`;
+    });
     
     // 将 {{var}} 转换为 {var}
-    result = result.replace(/\{\{([^}]+)\}\}/g, '{$1}');
+    result = result.replace(/\{\{([^}]+)\}\}/g, (match, varExpr) => {
+      const trimmed = varExpr.trim();
+      // 查找这个表达式在variables中的索引
+      const index = variables.findIndex(v => v.trim() === trimmed);
+      if (index >= 0) {
+        const safeVarName = this.generateSafeVarName(variables[index], index);
+        return `{${safeVarName}}`;
+      }
+      return `{${trimmed}}`;
+    });
     
     return result;
+  }
+
+  /**
+   * 生成安全的变量名
+   * @param {string} varName 原始变量名或表达式
+   * @param {number} index 索引
+   * @returns {string}
+   */
+  generateSafeVarName(varName, index) {
+    // 如果是简单变量名（只包含字母、数字、下划线），直接使用
+    if (/^[a-zA-Z_$][a-zA-Z0-9_$]*$/.test(varName)) {
+      return varName;
+    }
+    
+    // 如果包含点号，取最后一部分
+    if (varName.includes('.')) {
+      const parts = varName.split('.');
+      const lastPart = parts[parts.length - 1];
+      // 确保最后一部分是合法的变量名
+      if (/^[a-zA-Z_$][a-zA-Z0-9_$]*$/.test(lastPart)) {
+        return lastPart;
+      }
+    }
+    
+    // 对于复杂表达式，使用通用名称
+    return `val${index}`;
   }
 
   /**

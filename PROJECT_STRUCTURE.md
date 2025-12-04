@@ -191,7 +191,7 @@ target-project/src/i18n/
 ## 技术栈
 
 - **Node.js**: 运行环境
-- **@vue/compiler-sfc**: Vue单文件组件编译器
+- **vue-template-compiler**: Vue 2 单文件组件编译器
 - **@babel/parser**: JavaScript解析器
 - **@babel/traverse**: AST遍历
 - **@babel/generator**: 代码生成

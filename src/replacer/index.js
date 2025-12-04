@@ -27,16 +27,28 @@ class Replacer {
       }
 
       const replacements = [];
+      const processedFiles = new Set();
 
-      // 遍历所有需要替换的文件
+      // 按文件分组 key
+      const fileGroups = {};
       for (const [filePath, keyInfo] of Object.entries(keyMap.keyMap)) {
         const [relativePath] = filePath.split('::');
+        if (!fileGroups[relativePath]) {
+          fileGroups[relativePath] = [];
+        }
+        fileGroups[relativePath].push({ filePath, keyInfo });
+      }
+
+      // 遍历所有需要替换的文件
+      for (const [relativePath, keys] of Object.entries(fileGroups)) {
         const fullPath = path.join(targetProjectPath, relativePath);
+        if (processedFiles.has(fullPath)) continue;
 
         try {
-          const result = await this.replaceFile(fullPath, filePath, keyInfo, keyMap);
+          const result = await this.replaceFileOnce(fullPath, keys, keyMap);
           if (result) {
             replacements.push(result);
+            processedFiles.add(fullPath);
           }
         } catch (error) {
           console.error(`替换文件失败 ${relativePath}:`, error.message);
@@ -58,6 +70,72 @@ class Replacer {
   }
 
   /**
+   * 替换单个文件（一次性处理所有替换）
+   * @param {string} filePath 文件完整路径
+   * @param {Array} keys 该文件的所有 key
+   * @param {Object} keyMap 完整的key映射
+   * @returns {Object|null}
+   */
+  async replaceFileOnce(filePath, keys, keyMap) {
+    // 跳过配置文件
+    const fileName = path.basename(filePath);
+    const configFiles = ['vue.config.js', 'webpack.config.js', 'babel.config.js', 'vite.config.js', 'rollup.config.js'];
+    if (configFiles.includes(fileName)) {
+      console.log(`跳过配置文件: ${fileName}`);
+      return null;
+    }
+
+    // 跳过i18n配置目录下的所有文件
+    const normalizedPath = filePath.replace(/\\/g, '/');
+    if (normalizedPath.includes('/i18n/') || normalizedPath.includes('/locales/')) {
+      console.log(`跳过i18n配置文件: ${fileName}`);
+      return null;
+    }
+
+    // 获取文件内容
+    let content;
+    try {
+      content = await fs.promises.readFile(filePath, 'utf-8');
+    } catch (error) {
+      return null;
+    }
+
+    const ext = path.extname(filePath);
+    let modified = false;
+    let newContent = content;
+
+    if (ext === '.vue') {
+      newContent = await this.replaceVueFileComplete(content, keys, keyMap);
+      modified = newContent !== content;
+    } else if (ext === '.js' || ext === '.ts') {
+      // 普通JS文件使用i18n实例
+      newContent = await this.replaceJsFile(content, null, null, keyMap, filePath);
+      modified = newContent !== content;
+    }
+
+    if (modified && !this.config.autoReplace?.preview) {
+      await fs.promises.writeFile(filePath, newContent, 'utf-8');
+    }
+
+    return modified ? { filePath, modified: true } : null;
+  }
+
+  /**
+   * 完整替换Vue文件
+   * @param {string} content
+   * @param {Array} keys
+   * @param {Object} keyMap
+   * @returns {string}
+   */
+  async replaceVueFileComplete(content, keys, keyMap) {
+    // 先替换 script 部分
+    content = this.replaceVueScript(content, keyMap);
+    // 再替换 template 部分
+    content = this.replaceVueTemplate(content, keyMap);
+    return content;
+  }
+
+  /**
    * 替换单个文件
    * @param {string} filePath 文件完整路径
    * @param {string} key 提取时的key
@@ -66,6 +144,12 @@ class Replacer {
    * @returns {Object|null}
    */
   async replaceFile(filePath, key, keyInfo, keyMap) {
+    // 跳过i18n配置目录下的所有文件
+    const normalizedPath = filePath.replace(/\\/g, '/');
+    if (normalizedPath.includes('/i18n/') || normalizedPath.includes('/locales/')) {
+      return null;
+    }
+
     // 获取文件内容
     let content;
     try {
@@ -105,9 +189,9 @@ class Replacer {
     const [, section] = key.split('::');
 
     if (section === 'template') {
-      return this.replaceVueTemplate(content, key, keyInfo, keyMap);
+      return this.replaceVueTemplate(content, keyMap);
     } else if (section === 'script') {
-      return this.replaceVueScript(content, key, keyInfo, keyMap);
+      return this.replaceVueScript(content, keyMap);
     }
 
     return content;
@@ -116,15 +200,11 @@ class Replacer {
   /**
    * 替换Vue template部分
    * @param {string} content
-   * @param {string} key
-   * @param {string|Object} keyInfo
    * @param {Object} keyMap
    * @returns {string}
    */
-  replaceVueTemplate(content, key, keyInfo, keyMap) {
+  replaceVueTemplate(content, keyMap) {
     // 收集所有需要替换的内容
-    const replacements = [];
-
     for (const [k, info] of Object.entries(keyMap.keyMap)) {
       if (!k.includes('::template::')) continue;
 
@@ -134,28 +214,34 @@ class Replacer {
 
       if (typeof info === 'string') {
         // 普通文本
-        originalText = keyMap.messages;
-        // 从messages中找到对应的值
         const textValue = this.getValueByKey(keyMap.messages, i18nKey);
         if (!textValue) continue;
 
         originalText = textValue;
         i18nCall = `{{ $t('${i18nKey}') }}`;
 
-        // 替换文本内容
+        // 1. 先替换属性值 - 使用动态绑定（必须先处理，否则会与文本替换冲突）
+        const attrRegex = new RegExp(`(placeholder|title|label|alt)=["']${this.escapeRegex(originalText)}["']`, 'g');
+        content = content.replace(attrRegex, (match, attrName) => `:${attrName}="$t('${i18nKey}')"`);
+
+        // 2. 再替换文本内容
         const textRegex = new RegExp(`>\\s*${this.escapeRegex(originalText)}\\s*<`, 'g');
         content = content.replace(textRegex, `>${i18nCall}<`);
 
-        // 替换属性值
-        const attrRegex = new RegExp(`((?:placeholder|title|label|alt|value)=)["']${this.escapeRegex(originalText)}["']`, 'g');
-        content = content.replace(attrRegex, `$1"{{ $t('${i18nKey}') }}"`);
       } else {
         // 模板字符串
         originalText = info.original;
         const variables = info.variables || [];
+        const fullPaths = info.fullPaths || variables; // 使用完整路径
         
         if (variables.length > 0) {
-          const params = variables.map(v => `${v}: ${v}`).join(', ');
+          // 为复杂表达式生成安全的参数
+          const params = variables.map((v, i) => {
+            const path = fullPaths[i];
+            // 生成安全的变量名
+            const safeVarName = this.generateSafeVarName(v, i);
+            return `${safeVarName}: ${path}`;
+          }).join(', ');
           i18nCall = `{{ $t('${i18nKey}', { ${params} }) }}`;
         } else {
           i18nCall = `{{ $t('${i18nKey}') }}`;
@@ -173,18 +259,17 @@ class Replacer {
   /**
    * 替换Vue script部分
    * @param {string} content
-   * @param {string} key
-   * @param {string|Object} keyInfo
    * @param {Object} keyMap
    * @returns {string}
    */
-  replaceVueScript(content, key, keyInfo, keyMap) {
+  replaceVueScript(content, keyMap) {
     // 解析<script>标签
     const scriptMatch = content.match(/<script[^>]*>([\s\S]*?)<\/script>/);
     if (!scriptMatch) return content;
 
     const scriptContent = scriptMatch[1];
-    const replacedScript = this.replaceJsContent(scriptContent, keyMap);
+    // Vue组件的script部分使用this.$t
+    const replacedScript = this.replaceJsContent(scriptContent, keyMap, true);
 
     return content.replace(scriptMatch[0], `<script>${replacedScript}</script>`);
   }
@@ -195,17 +280,13 @@ class Replacer {
    * @param {string} key
    * @param {string|Object} keyInfo
    * @param {Object} keyMap
+   * @param {string} filePath 文件路径，用于判断是否为Vue组件
    * @returns {string}
    */
-  async replaceJsFile(content, key, keyInfo, keyMap) {
-    const replacedContent = this.replaceJsContent(content, keyMap);
-    
-    // 添加import语句
-    if (replacedContent !== content && !content.includes('import i18n')) {
-      const importPath = this.config.autoReplace?.importPath || '@/i18n';
-      return `import i18n from '${importPath}';\n\n${replacedContent}`;
-    }
-
+  async replaceJsFile(content, key, keyInfo, keyMap, filePath = '') {
+    // 检查是否为Vue组件的script部分（通过调用栈判断）
+    const isVueComponent = filePath.endsWith('.vue');
+    const replacedContent = this.replaceJsContent(content, keyMap, isVueComponent, filePath);
     return replacedContent;
   }
 
@@ -213,9 +294,11 @@ class Replacer {
    * 替换JS内容
    * @param {string} content
    * @param {Object} keyMap
+   * @param {boolean} isVueComponent 是否为Vue组件（script部分）
+   * @param {string} filePath 文件路径
    * @returns {string}
    */
-  replaceJsContent(content, keyMap) {
+  replaceJsContent(content, keyMap, isVueComponent = false, filePath = '') {
     try {
       const ast = parse(content, {
         sourceType: 'module',
@@ -223,11 +306,23 @@ class Replacer {
       });
 
       let modified = false;
+      let needsI18nImport = false;
       const self = this; // 保存this引用
+
+      // 决定使用哪种i18n调用方式
+      const i18nMethod = isVueComponent ? 'this.$t' : 'i18n.t';
+      if (!isVueComponent) {
+        needsI18nImport = true;
+      }
 
       traverse(ast, {
         StringLiteral(path) {
           const text = path.node.value;
+          
+          // 检查是否在路由配置的静态meta对象中
+          if (self.isInRouteStaticMeta(path)) {
+            return; // 跳过路由配置中的静态meta替换
+          }
           
           // 查找对应的key
           for (const [k, info] of Object.entries(keyMap.keyMap)) {
@@ -238,7 +333,7 @@ class Replacer {
 
             if (textValue === text) {
               // 替换为i18n调用
-              path.replaceWithSourceString(`i18n.t('${i18nKey}')`);
+              path.replaceWithSourceString(`${i18nMethod}('${i18nKey}')`);
               modified = true;
               break;
             }
@@ -246,20 +341,73 @@ class Replacer {
         },
 
         TemplateLiteral(path) {
-          // 查找对应的模板字符串
+          // 检查是否在路由配置的静态meta对象中
+          if (self.isInRouteStaticMeta(path)) {
+            return; // 跳过路由配置中的静态meta替换
+          }
+          
+          // 从当前节点提取模板字符串的静态部分（parts）
+          const currentParts = [];
+          path.node.quasis.forEach((quasi) => {
+            currentParts.push(quasi.value.cooked);
+          });
+          
+          // 从当前 AST 节点提取实际的表达式代码
+          const actualExpressions = path.node.expressions.map(expr => {
+            return generate(expr, { compact: true }).code;
+          });
+          
+          // 查找匹配的模板字符串
           for (const [k, info] of Object.entries(keyMap.keyMap)) {
             if (typeof info !== 'object' || !info.variables) continue;
             if (!k.includes('::script::') && !k.includes('::file::')) continue;
 
             const i18nKey = info.key;
             const variables = info.variables;
-
-            if (variables.length > 0) {
-              const params = variables.join(', ');
-              const replacement = `i18n.t('${i18nKey}', { ${params} })`;
-              path.replaceWithSourceString(replacement);
-              modified = true;
-              break;
+            
+            // 检查变量数量是否匹配
+            if (actualExpressions.length !== variables.length) {
+              continue;
+            }
+            
+            // 检查模板结构是否匹配（通过对比 parts）
+            // 从 original 重建 parts
+            const template = info.original;
+            let expectedParts = [];
+            let tempStr = template;
+            
+            // 提取所有 {{ ... }} 之间的静态文本
+            const vueVars = template.match(/\{\{([^}]+)\}\}/g) || [];
+            if (vueVars.length > 0) {
+              const splitParts = template.split(/\{\{[^}]+\}\}/);
+              expectedParts = splitParts;
+            } else if (template.includes('{') && template.includes('}')) {
+              // JS模板字符串格式，提取 {varName} 之间的内容
+              const jsParts = template.split(/\{[^}]+\}/);
+              expectedParts = jsParts;
+            }
+            
+            // 对比 parts 是否完全匹配
+            if (expectedParts.length > 0 && expectedParts.length === currentParts.length) {
+              let partsMatch = true;
+              for (let i = 0; i < expectedParts.length; i++) {
+                if (expectedParts[i] !== currentParts[i]) {
+                  partsMatch = false;
+                  break;
+                }
+              }
+              
+              if (partsMatch) {
+                // 生成对象参数，使用安全的变量名作为key，实际表达式作为值
+                const params = variables.map((v, i) => {
+                  const safeVarName = self.generateSafeVarName(v, i);
+                  return `${safeVarName}: ${actualExpressions[i]}`;
+                }).join(', ');
+                const replacement = `${i18nMethod}('${i18nKey}', { ${params} })`;
+                path.replaceWithSourceString(replacement);
+                modified = true;
+                break;
+              }
             }
           }
         }
@@ -270,7 +418,16 @@ class Replacer {
           retainLines: true,
           compact: false
         });
-        return output.code;
+        let code = output.code;
+
+        // 如果需要导入i18n且还没有导入
+        if (needsI18nImport && !code.includes("import i18n from")) {
+          // 查找i18n目录的相对路径
+          const i18nImport = this.generateI18nImport(filePath);
+          code = i18nImport + code;
+        }
+
+        return code;
       }
 
       return content;
@@ -278,6 +435,76 @@ class Replacer {
       console.error('解析JS内容失败:', error.message);
       return content;
     }
+  }
+
+  /**
+   * 生成i18n导入语句
+   * @param {string} filePath 当前文件路径
+   * @returns {string}
+   */
+  generateI18nImport(filePath) {
+    if (!filePath) {
+      return "import i18n from '@/i18n';\n";
+    }
+    
+    // 计算相对路径
+    const fileDir = path.dirname(filePath);
+    const projectRoot = this.config.targetProject;
+    const i18nPath = path.join(projectRoot, 'src', 'i18n', 'index.js');
+    
+    let relativePath = path.relative(fileDir, i18nPath);
+    // 规范化路径分隔符为 /
+    relativePath = relativePath.replace(/\\/g, '/');
+    // 确保以 ./ 或 ../ 开头
+    if (!relativePath.startsWith('.')) {
+      relativePath = './' + relativePath;
+    }
+    // 移除 .js 扩展名
+    relativePath = relativePath.replace(/\.js$/, '');
+    
+    return `import i18n from '${relativePath}';\n`;
+  }
+
+  /**
+   * 检查节点是否在路由配置的静态meta对象中
+   * @param {Object} path Babel路径对象
+   * @returns {boolean}
+   */
+  isInRouteStaticMeta(path) {
+    let current = path;
+    let inMetaObject = false;
+    let inRoutesArray = false;
+    
+    // 向上遍历AST树
+    while (current && current.parent) {
+      current = current.parentPath;
+      if (!current) break;
+      
+      // 检查是否在meta属性中
+      if (current.isObjectProperty && current.isObjectProperty() && current.node.key && current.node.key.name === 'meta') {
+        inMetaObject = true;
+      }
+      
+      // 检查是否在routes数组或类似的路由配置中
+      if (current.isVariableDeclarator && current.isVariableDeclarator() && current.node.id) {
+        const varName = current.node.id.name;
+        if (varName === 'routes' || varName === 'router' || varName === 'routerConfig') {
+          inRoutesArray = true;
+        }
+      }
+      
+      // 检查是否在数组字面量中（通常routes是数组）
+      if (current.isArrayExpression && current.isArrayExpression() && inMetaObject) {
+        inRoutesArray = true;
+      }
+      
+      // 如果同时在meta对象和routes相关的结构中，说明是路由配置
+      if (inMetaObject && inRoutesArray) {
+        return true;
+      }
+    }
+    
+    return false;
   }
 
   /**
@@ -296,6 +523,32 @@ class Replacer {
     }
 
     return typeof current === 'string' ? current : null;
+  }
+
+  /**
+   * 生成安全的变量名
+   * @param {string} varName 原始变量名或表达式
+   * @param {number} index 索引
+   * @returns {string}
+   */
+  generateSafeVarName(varName, index) {
+    // 如果是简单变量名（只包含字母、数字、下划线），直接使用
+    if (/^[a-zA-Z_$][a-zA-Z0-9_$]*$/.test(varName)) {
+      return varName;
+    }
+    
+    // 如果包含点号，取最后一部分
+    if (varName.includes('.')) {
+      const parts = varName.split('.');
+      const lastPart = parts[parts.length - 1];
+      // 确保最后一部分是合法的变量名
+      if (/^[a-zA-Z_$][a-zA-Z0-9_$]*$/.test(lastPart)) {
+        return lastPart;
+      }
+    }
+    
+    // 对于复杂表达式，使用通用名称
+    return `val${index}`;
   }
 
   /**

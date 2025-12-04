@@ -1,4 +1,6 @@
-# Vue i18n 自动转换工具 - 项目清单
+# Vue2 i18n 自动转换工具 - 项目清单
+
+> **注意**: 本工具专为 Vue 2 项目设计，使用 vue-i18n@8.x 版本。
 
 ## ✅ 核心功能模块 (100% 完成)
 
@@ -12,7 +14,7 @@
 
 #### 解析器模块 
 - [x] `src/parser/index.js` - 统一解析器接口
-- [x] `src/parser/vueParser.js` - Vue文件解析器，使用@vue/compiler-sfc
+- [x] `src/parser/vueParser.js` - Vue 2 文件解析器，使用 vue-template-compiler
 - [x] `src/parser/jsParser.js` - JavaScript/TypeScript解析器，使用@babel/parser
 
 #### 提取器模块
@@ -151,7 +153,7 @@
 - [x] @babel/generator@^7.23.0 - 代码生成
 - [x] @babel/parser@^7.23.0 - JavaScript解析
 - [x] @babel/traverse@^7.23.0 - AST遍历
-- [x] @vue/compiler-sfc@^3.3.0 - Vue文件编译
+- [x] vue-template-compiler - Vue 2 文件编译
 - [x] glob@^10.3.0 - 文件匹配
 - [x] commander@^11.1.0 - CLI框架
 
@@ -197,7 +199,7 @@
 - [ ] 大型项目（1000+文件）
 - [ ] 复杂模板字符串
 - [ ] TypeScript项目
-- [ ] Vue 3项目
+- [ ] 不同的 Vue 2 项目结构
 - [ ] 嵌套目录结构
 
 ## 📝 待办事项（可选扩展）

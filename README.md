@@ -1,6 +1,8 @@
 # Vue i18n 自动转换工具
 
-一个帮助大型Vue项目快速引入i18n国际化支持的自动化工具。通过AST语法树解析，自动提取项目中的中文文本，生成i18n配置文件，并支持自动替换源代码。
+一个帮助大型 Vue2 项目快速引入i18n国际化支持的自动化工具。通过AST语法树解析，自动提取项目中的中文文本，生成i18n配置文件，并支持自动替换源代码。
+
+> **注意**: 本工具专为 Vue2 项目设计，使用 vue-i18n@8.x 版本。
 
 ## 功能特性
 
@@ -360,10 +362,16 @@ A: 修改配置中的 `generateEnglish` 为 `true`，然后手动翻译 `en-US.j
 ### Q: 替换后出现错误？
 A: 使用 `--preview` 参数预览，检查语法是否正确。确保有备份。
 
+## 前置要求
+
+- Node.js >= 14.0.0
+- Vue 2.x 项目
+- npm 或 yarn
+
 ## 技术栈
 
 - **Node.js**: 运行环境
-- **@vue/compiler-sfc**: Vue单文件组件解析
+- **vue-template-compiler**: Vue 2 单文件组件解析
 - **@babel/parser**: JavaScript/TypeScript解析
 - **@babel/traverse**: AST遍历
 - **commander**: 命令行接口

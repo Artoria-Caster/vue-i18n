@@ -78,6 +78,7 @@ class JsParser {
    */
   extractTemplateInfo(node) {
     const variables = [];
+    const fullPaths = []; // 保存完整路径供显示
     const parts = [];
 
     // 提取模板字符串的静态部分
@@ -88,17 +89,26 @@ class JsParser {
     // 提取表达式变量
     node.expressions.forEach((expr, index) => {
       let varName = '';
+      let fullPath = '';
       
       if (expr.type === 'Identifier') {
         varName = expr.name;
+        fullPath = expr.name;
       } else if (expr.type === 'MemberExpression') {
-        // 处理 obj.prop 形式
-        varName = this.getMemberExpressionName(expr);
+        // 处理 obj.prop 形式 - 只取最后一个属性名作为变量名
+        fullPath = this.getMemberExpressionName(expr);
+        varName = this.getLastProperty(expr);
+      } else if (expr.type === 'ConditionalExpression') {
+        // 条件表达式 - 跳过或使用默认名
+        varName = `value${index}`;
+        fullPath = `value${index}`;
       } else {
         varName = `expr${index}`;
+        fullPath = `expr${index}`;
       }
       
       variables.push(varName);
+      fullPaths.push(fullPath);
     });
 
     // 重建模板字符串
@@ -110,8 +120,29 @@ class JsParser {
     return {
       template,
       variables,
+      fullPaths, // 添加完整路径信息
       parts
     };
+  }
+
+  /**
+   * 获取成员表达式的最后一个属性名
+   * @param {Object} node MemberExpression节点
+   * @returns {string}
+   */
+  getLastProperty(node) {
+    if (node.type === 'Identifier') {
+      return node.name;
+    }
+    
+    if (node.type === 'MemberExpression') {
+      if (node.property && node.property.name) {
+        return node.property.name;
+      }
+      return this.getLastProperty(node.property);
+    }
+    
+    return 'value';
   }
 
   /**

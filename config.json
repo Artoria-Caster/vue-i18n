@@ -1,5 +1,5 @@
 {
-  "targetProject": "./examples/example-project",
+  "targetProject": "./examples/vue2-demo",
   "outputDir": "./output",
   "fileExtensions": [".vue", ".js", ".ts"],
   "excludeDirs": [
