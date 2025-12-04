@@ -76,9 +76,9 @@ class TranslationGenerator {
         const chineseText = line.substring(0, equalIndex).trim();
         const translatedText = line.substring(equalIndex + 1).trim();
         
-        // 只添加已填写翻译的项
-        if (chineseText && translatedText) {
-          translationMap.set(chineseText, translatedText);
+        // 添加所有包含等号的项，包括未填写翻译的项（映射为空字符串）
+        if (chineseText) {
+          translationMap.set(chineseText, translatedText || '');
         }
       }
       
@@ -106,8 +106,13 @@ class TranslationGenerator {
 
       if (typeof value === 'string') {
         // 尝试翻译字符串值
-        const translated = translationMap.get(value);
-        result[key] = translated !== undefined ? translated : value;
+        if (translationMap.has(value)) {
+          // 如果在翻译映射中找到（包括空字符串），使用翻译值
+          result[key] = translationMap.get(value);
+        } else {
+          // 如果不在翻译映射中，保留原值
+          result[key] = value;
+        }
       } else if (typeof value === 'object' && value !== null) {
         // 递归处理嵌套对象
         result[key] = this.translateObject(value, translationMap);
