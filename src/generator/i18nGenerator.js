@@ -22,7 +22,7 @@ class I18nGenerator {
     try {
       const i18nPath = path.join(
         targetProjectPath,
-        this.config.autoReplace?.i18nPath || './src/i18n'
+        this.config.autoReplace?.i18nPath || './src/lang'
       );
 
       // 创建i18n目录结构
@@ -116,11 +116,11 @@ class I18nGenerator {
       return this.keyMappings[text];
     }
 
-    // 根据文件路径确定前缀
-    let prefix = 'common';
+    // 根据文件路径确定前缀 (首字母大写)
+    let prefix = 'Common';
     for (const [pathPattern, keyPrefix] of Object.entries(this.keyPrefixes)) {
       if (path.includes(pathPattern)) {
-        prefix = keyPrefix.replace(/\.$/, '');
+        prefix = this.capitalize(keyPrefix.replace(/\.$/, ''));
         break;
       }
     }
@@ -312,16 +312,26 @@ class I18nGenerator {
   async generateLocaleFile(i18nPath, locale, keyMap, isEnglish = false) {
     const { messages } = keyMap;
     const localesPath = path.join(i18nPath, 'locales');
-    const filePath = path.join(localesPath, `${locale}.js`);
+    
+    // 创建语言文件夹 (如 zh-CN, en-US)
+    const localeFolderPath = path.join(localesPath, locale);
+    await fs.promises.mkdir(localeFolderPath, { recursive: true });
 
-    let content = `export default ${JSON.stringify(messages, null, 2)};\n`;
-
-    // 如果是英文，添加翻译提示
-    if (isEnglish) {
-      content = `// TODO: 请翻译以下内容\n${content}`;
+    // 为每个模块生成独立的 js 文件
+    for (const [moduleName, moduleMessages] of Object.entries(messages)) {
+      // 模块名首字母小写作为文件名
+      const fileName = moduleName.charAt(0).toLowerCase() + moduleName.slice(1) + '.js';
+      const filePath = path.join(localeFolderPath, fileName);
+      
+      let content = `export default ${JSON.stringify(moduleMessages, null, 2)};\n`;
+      
+      // 如果是英文，添加翻译提示
+      if (isEnglish) {
+        content = `// TODO: 请翻译以下内容\n${content}`;
+      }
+      
+      await fs.promises.writeFile(filePath, content, 'utf-8');
     }
-
-    await fs.promises.writeFile(filePath, content, 'utf-8');
   }
 
   /**
@@ -331,9 +341,26 @@ class I18nGenerator {
   async generateIndexFile(i18nPath) {
     const content = `import Vue from 'vue';
 import VueI18n from 'vue-i18n';
-import zhCN from './locales/zh-CN';
-${this.config.autoReplace?.generateEnglish ? "import enUS from './locales/en-US';" : ''}
 
+// 使用 require.context 动态导入语言包模块 (兼容 webpack)
+const zhCNContext = require.context('./locales/zh-CN', false, /\.js$/);
+${this.config.autoReplace?.generateEnglish ? "const enUSContext = require.context('./locales/en-US', false, /\\.js$/);" : ''}
+
+// 合并模块
+const zhCN = {};
+zhCNContext.keys().forEach(key => {
+  const moduleName = key.replace('./', '').replace('.js', '');
+  const capitalizedName = moduleName.charAt(0).toUpperCase() + moduleName.slice(1);
+  zhCN[capitalizedName] = zhCNContext(key).default;
+});
+
+${this.config.autoReplace?.generateEnglish ? `const enUS = {};
+enUSContext.keys().forEach(key => {
+  const moduleName = key.replace('./', '').replace('.js', '');
+  const capitalizedName = moduleName.charAt(0).toUpperCase() + moduleName.slice(1);
+  enUS[capitalizedName] = enUSContext(key).default;
+});
+` : ''}
 Vue.use(VueI18n);
 
 const i18n = new VueI18n({
@@ -349,6 +376,16 @@ export default i18n;
 
     const filePath = path.join(i18nPath, 'index.js');
     await fs.promises.writeFile(filePath, content, 'utf-8');
+  }
+
+  /**
+   * 将字符串首字母转换为大写
+   * @param {string} str
+   * @returns {string}
+   */
+  capitalize(str) {
+    if (!str) return str;
+    return str.charAt(0).toUpperCase() + str.slice(1);
   }
 }
 

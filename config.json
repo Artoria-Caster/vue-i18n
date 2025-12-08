@@ -23,31 +23,31 @@
     "backup": true,
     "backupDir": "./backup",
     "preview": false,
-    "i18nPath": "./src/i18n",
-    "importPath": "@/i18n",
+    "i18nPath": "./src/lang",
+    "importPath": "@/lang",
     "generateEnglish": false,
     "keyStrategy": "semantic",
     "commonKeys": [
-      "common.submit",
-      "common.cancel",
-      "common.confirm",
-      "common.delete",
-      "common.edit",
-      "common.save"
+      "Common.submit",
+      "Common.cancel",
+      "Common.confirm",
+      "Common.delete",
+      "Common.edit",
+      "Common.save"
     ]
   },
   "keyMappings": {
-    "提交": "common.submit",
-    "取消": "common.cancel",
-    "确认": "common.confirm",
-    "删除": "common.delete",
-    "编辑": "common.edit",
-    "保存": "common.save"
+    "提交": "Common.submit",
+    "取消": "Common.cancel",
+    "确认": "Common.confirm",
+    "删除": "Common.delete",
+    "编辑": "Common.edit",
+    "保存": "Common.save"
   },
   "keyPrefixes": {
-    "src/views/user/": "user.",
-    "src/views/admin/": "admin.",
-    "src/components/common/": "common."
+    "src/views/user/": "User.",
+    "src/views/admin/": "Admin.",
+    "src/components/common/": "Common."
   },
   "pendingTasks": {
     "enabled": true,

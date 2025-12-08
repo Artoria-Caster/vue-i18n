@@ -23,19 +23,25 @@ class LocaleGenerator {
       // 生成key映射和消息对象
       const { keyMap, messages } = this.generateKeyMap(extractedData);
 
-      // 生成zh-CN.js
-      const localeFilePath = path.join(outputDir, 'zh-CN.js');
-      await this.generateLocaleFile(localeFilePath, messages);
+      // 创建 zh-CN 文件夹并生成模块文件
+      const localeFolderPath = path.join(outputDir, 'zh-CN');
+      await fs.promises.mkdir(localeFolderPath, { recursive: true });
+      
+      // 为每个模块生成独立的 js 文件
+      const moduleFiles = await this.generateModuleFiles(localeFolderPath, messages);
 
       // 生成翻译对照文本文件
       const translationFilePath = path.join(outputDir, 'translation-template.txt');
       await this.generateTranslationTemplate(translationFilePath, messages);
 
       console.log('\n✓ 语言包文件已生成');
-      console.log(`  - zh-CN.js: ${localeFilePath}`);
+      console.log(`  - zh-CN 文件夹: ${localeFolderPath}`);
+      moduleFiles.forEach(file => {
+        console.log(`    - ${path.basename(file)}`);
+      });
       console.log(`  - 翻译对照模板: ${translationFilePath}\n`);
 
-      return { keyMap, localeFilePath, translationFilePath };
+      return { keyMap, localeFolderPath, moduleFiles, translationFilePath };
     } catch (error) {
       console.error('生成语言包失败:', error);
       throw error;
@@ -92,21 +98,21 @@ class LocaleGenerator {
     const pathParts = path.split('::')[0].split('/');
     const fileName = pathParts[pathParts.length - 1].replace(/\.(vue|js)$/, '');
     
-    // 确定前缀
-    let prefix = this.keyPrefixes.default || 'common';
+    // 确定前缀 (首字母大写)
+    let prefix = this.keyPrefixes.default || 'Common';
     
     if (fileName) {
       // 根据文件名确定模块
       for (const [pattern, modulePrefix] of Object.entries(this.keyPrefixes)) {
         if (fileName.toLowerCase().includes(pattern.toLowerCase())) {
-          prefix = modulePrefix;
+          prefix = this.capitalize(modulePrefix.replace(/\.$/, ''));
           break;
         }
       }
       
-      // 如果没有匹配到特定前缀，使用文件名作为前缀
-      if (prefix === (this.keyPrefixes.default || 'common') && fileName !== 'App') {
-        prefix = this.toCamelCase(fileName);
+      // 如果没有匹配到特定前缀，使用文件名作为前缀(首字母大写)
+      if (prefix === (this.keyPrefixes.default || 'Common') && fileName !== 'App') {
+        prefix = this.capitalize(fileName);
       }
     }
 
@@ -155,12 +161,13 @@ class LocaleGenerator {
   }
 
   /**
-   * 转换为驼峰命名
+   * 将字符串首字母转换为大写
    * @param {string} str
    * @returns {string}
    */
-  toCamelCase(str) {
-    return str.charAt(0).toLowerCase() + str.slice(1);
+  capitalize(str) {
+    if (!str) return str;
+    return str.charAt(0).toUpperCase() + str.slice(1);
   }
 
   /**
@@ -222,6 +229,29 @@ class LocaleGenerator {
   async generateLocaleFile(filePath, messages) {
     const content = `export default ${JSON.stringify(messages, null, 2)};\n`;
     await fs.promises.writeFile(filePath, content, 'utf-8');
+  }
+
+  /**
+   * 为每个模块生成独立的 js 文件
+   * @param {string} folderPath zh-CN 文件夹路径
+   * @param {Object} messages 消息对象
+   * @returns {Array} 生成的文件路径列表
+   */
+  async generateModuleFiles(folderPath, messages) {
+    const files = [];
+    
+    for (const [moduleName, moduleMessages] of Object.entries(messages)) {
+      // 模块名首字母小写作为文件名
+      const fileName = moduleName.charAt(0).toLowerCase() + moduleName.slice(1) + '.js';
+      const filePath = path.join(folderPath, fileName);
+      
+      const content = `export default ${JSON.stringify(moduleMessages, null, 2)};\n`;
+      await fs.promises.writeFile(filePath, content, 'utf-8');
+      
+      files.push(filePath);
+    }
+    
+    return files;
   }
 
   /**

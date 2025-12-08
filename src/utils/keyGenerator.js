@@ -47,12 +47,14 @@ class KeyGenerator {
     // 检查是否匹配预定义的前缀规则
     for (const [pathPattern, keyPrefix] of Object.entries(this.keyPrefixes)) {
       if (filePath.includes(pathPattern)) {
-        return keyPrefix.replace(/\.$/, '');
+        // 确保前缀以大写字母开头，去掉末尾的点
+        const prefix = keyPrefix.replace(/\.$/, '');
+        return this.capitalize(prefix);
       }
     }
 
-    // 默认返回 common
-    return 'common';
+    // 默认返回 Common (大写开头)
+    return 'Common';
   }
 
   /**
@@ -169,6 +171,16 @@ class KeyGenerator {
    */
   reset() {
     this.keyCounter = {};
+  }
+
+  /**
+   * 将字符串首字母转换为大写
+   * @param {string} str
+   * @returns {string}
+   */
+  capitalize(str) {
+    if (!str) return str;
+    return str.charAt(0).toUpperCase() + str.slice(1);
   }
 }
 

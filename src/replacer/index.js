@@ -86,10 +86,10 @@ class Replacer {
       return null;
     }
 
-    // 跳过i18n配置目录下的所有文件
+    // 跳过i18n/lang配置目录下的所有文件
     const normalizedPath = filePath.replace(/\\/g, '/');
-    if (normalizedPath.includes('/i18n/') || normalizedPath.includes('/locales/')) {
-      console.log(`跳过i18n配置文件: ${fileName}`);
+    if (normalizedPath.includes('/i18n/') || normalizedPath.includes('/lang/') || normalizedPath.includes('/locales/')) {
+      console.log(`跳过i18n/lang配置文件: ${fileName}`);
       return null;
     }
 
@@ -145,9 +145,9 @@ class Replacer {
    * @returns {Object|null}
    */
   async replaceFile(filePath, key, keyInfo, keyMap) {
-    // 跳过i18n配置目录下的所有文件
+    // 跳过i18n/lang配置目录下的所有文件
     const normalizedPath = filePath.replace(/\\/g, '/');
-    if (normalizedPath.includes('/i18n/') || normalizedPath.includes('/locales/')) {
+    if (normalizedPath.includes('/i18n/') || normalizedPath.includes('/lang/') || normalizedPath.includes('/locales/')) {
       return null;
     }
 
@@ -471,7 +471,8 @@ class Replacer {
     // 计算相对路径
     const fileDir = path.dirname(filePath);
     const projectRoot = this.config.targetProject;
-    const i18nPath = path.join(projectRoot, 'src', 'i18n', 'index.js');
+    const i18nPathConfig = this.config.autoReplace?.i18nPath || './src/lang';
+    const i18nPath = path.join(projectRoot, i18nPathConfig, 'index.js');
     
     let relativePath = path.relative(fileDir, i18nPath);
     // 规范化路径分隔符为 /

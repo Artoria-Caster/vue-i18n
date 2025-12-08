@@ -11,38 +11,96 @@ class TranslationGenerator {
   }
 
   /**
-   * 读取zh-CN.js语言包文件
-   * @param {string} zhCNPath - zh-CN.js文件路径
+   * 读取zh-CN语言包文件夹
+   * @param {string} zhCNPath - zh-CN文件夹路径
    * @returns {Object} 解析后的中文语言包对象
    */
   readZhCNFile(zhCNPath) {
     try {
-      if (!fs.existsSync(zhCNPath)) {
-        throw new Error(`zh-CN.js文件不存在: ${zhCNPath}`);
+      // 检查是否是文件夹
+      const stats = fs.statSync(zhCNPath);
+      
+      if (stats.isDirectory()) {
+        // 读取文件夹中的所有模块文件
+        return this.readZhCNFolder(zhCNPath);
+      } else {
+        // 兼容旧的单文件格式
+        return this.readZhCNSingleFile(zhCNPath);
       }
-
-      const content = fs.readFileSync(zhCNPath, 'utf-8');
-      
-      // 移除export default，将其转换为可执行的JS对象
-      const cleanContent = content
-        .replace(/export\s+default\s+/, 'module.exports = ')
-        .replace(/\r\n/g, '\n');
-      
-      // 创建临时文件以便require
-      const tempFile = path.resolve(path.dirname(zhCNPath), '.temp_zh-CN.js');
-      fs.writeFileSync(tempFile, cleanContent, 'utf-8');
-      
-      // 清除require缓存
-      delete require.cache[tempFile];
-      const zhCNData = require(tempFile);
-      
-      // 删除临时文件
-      fs.unlinkSync(tempFile);
-      
-      return zhCNData;
     } catch (error) {
-      throw new Error(`读取zh-CN.js文件失败: ${error.message}`);
+      throw new Error(`读取zh-CN语言包失败: ${error.message}`);
     }
+  }
+
+  /**
+   * 读取zh-CN文件夹中的所有模块
+   * @param {string} folderPath - zh-CN文件夹路径
+   * @returns {Object} 合并后的语言包对象
+   */
+  readZhCNFolder(folderPath) {
+    const zhCNData = {};
+    const files = fs.readdirSync(folderPath);
+    
+    for (const file of files) {
+      if (file.endsWith('.js')) {
+        const filePath = path.join(folderPath, file);
+        const content = fs.readFileSync(filePath, 'utf-8');
+        
+        // 移除export default，将其转换为可执行的JS对象
+        const cleanContent = content
+          .replace(/export\s+default\s+/, 'module.exports = ')
+          .replace(/\r\n/g, '\n');
+        
+        // 创建临时文件以便require
+        const tempFile = path.resolve(path.dirname(filePath), `.temp_${file}`);
+        fs.writeFileSync(tempFile, cleanContent, 'utf-8');
+        
+        // 清除require缓存
+        delete require.cache[tempFile];
+        const moduleData = require(tempFile);
+        
+        // 删除临时文件
+        fs.unlinkSync(tempFile);
+        
+        // 模块名首字母大写
+        const moduleName = file.replace('.js', '');
+        const capitalizedName = moduleName.charAt(0).toUpperCase() + moduleName.slice(1);
+        zhCNData[capitalizedName] = moduleData;
+      }
+    }
+    
+    return zhCNData;
+  }
+
+  /**
+   * 读取zh-CN.js单文件(兼容旧格式)
+   * @param {string} zhCNPath - zh-CN.js文件路径
+   * @returns {Object} 解析后的中文语言包对象
+   */
+  readZhCNSingleFile(zhCNPath) {
+    if (!fs.existsSync(zhCNPath)) {
+      throw new Error(`zh-CN.js文件不存在: ${zhCNPath}`);
+    }
+
+    const content = fs.readFileSync(zhCNPath, 'utf-8');
+    
+    // 移除export default，将其转换为可执行的JS对象
+    const cleanContent = content
+      .replace(/export\s+default\s+/, 'module.exports = ')
+      .replace(/\r\n/g, '\n');
+    
+    // 创建临时文件以便require
+    const tempFile = path.resolve(path.dirname(zhCNPath), '.temp_zh-CN.js');
+    fs.writeFileSync(tempFile, cleanContent, 'utf-8');
+    
+    // 清除require缓存
+    delete require.cache[tempFile];
+    const zhCNData = require(tempFile);
+    
+    // 删除临时文件
+    fs.unlinkSync(tempFile);
+    
+    return zhCNData;
   }
 
   /**
@@ -158,17 +216,17 @@ class TranslationGenerator {
 
   /**
    * 生成目标语言的配置文件
-   * @param {string} zhCNPath - zh-CN.js文件路径
+   * @param {string} zhCNPath - zh-CN文件夹或文件路径
    * @param {string} templatePath - translation-template.txt文件路径
    * @param {string} targetLang - 目标语言代码，如 'en-US', 'ja-JP' 等
-   * @param {string} outputDir - 输出目录，默认为zh-CN.js所在目录
-   * @returns {string} 生成的文件路径
+   * @param {string} outputDir - 输出目录，默认为zh-CN所在目录
+   * @returns {string} 生成的文件夹或文件路径
    */
   async generate(zhCNPath, templatePath, targetLang = 'en-US', outputDir = null) {
     console.log(`\n开始生成${targetLang}语言包...`);
     
-    // 1. 读取zh-CN.js
-    console.log('1. 读取zh-CN.js文件...');
+    // 1. 读取zh-CN
+    console.log('1. 读取zh-CN语言包...');
     const zhCNData = this.readZhCNFile(zhCNPath);
     console.log(`   ✓ 成功读取中文语言包`);
 
@@ -190,14 +248,42 @@ class TranslationGenerator {
     // 5. 生成文件
     console.log('4. 生成语言包文件...');
     const output = outputDir || path.dirname(zhCNPath);
-    const outputPath = path.join(output, `${targetLang}.js`);
     
-    const fileContent = `export default ${this.formatObjectToJS(translatedData, 0)};\n`;
-    fs.writeFileSync(outputPath, fileContent, 'utf-8');
+    // 检查zhCNPath是文件夹还是文件，决定输出格式
+    const stats_zhCN = fs.statSync(zhCNPath);
     
-    console.log(`   ✓ 已生成: ${outputPath}`);
-
-    return outputPath;
+    if (stats_zhCN.isDirectory()) {
+      // 生成文件夹结构
+      const outputFolderPath = path.join(output, targetLang);
+      await fs.promises.mkdir(outputFolderPath, { recursive: true });
+      
+      const moduleFiles = [];
+      for (const [moduleName, moduleMessages] of Object.entries(translatedData)) {
+        // 模块名首字母小写作为文件名
+        const fileName = moduleName.charAt(0).toLowerCase() + moduleName.slice(1) + '.js';
+        const filePath = path.join(outputFolderPath, fileName);
+        
+        const fileContent = `export default ${this.formatObjectToJS(moduleMessages, 0)};\n`;
+        await fs.promises.writeFile(filePath, fileContent, 'utf-8');
+        
+        moduleFiles.push(filePath);
+      }
+      
+      console.log(`   ✓ 已生成文件夹: ${outputFolderPath}`);
+      moduleFiles.forEach(file => {
+        console.log(`     - ${path.basename(file)}`);
+      });
+      
+      return outputFolderPath;
+    } else {
+      // 生成单文件（兼容旧格式）
+      const outputPath = path.join(output, `${targetLang}.js`);
+      const fileContent = `export default ${this.formatObjectToJS(translatedData, 0)};\n`;
+      await fs.promises.writeFile(outputPath, fileContent, 'utf-8');
+      
+      console.log(`   ✓ 已生成: ${outputPath}`);
+      return outputPath;
+    }
   }
 
   /**

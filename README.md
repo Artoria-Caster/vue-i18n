@@ -89,8 +89,8 @@ npm install
   "autoReplace": {
     "enabled": false,                    // 是否启用自动替换
     "backup": true,                      // 是否备份
-    "i18nPath": "./src/i18n",           // i18n配置目录
-    "importPath": "@/i18n",             // 导入路径
+    "i18nPath": "./src/lang",           // 语言包配置目录
+    "importPath": "@/lang",             // 导入路径
     "keyStrategy": "semantic"            // key生成策略: semantic/hash
   }
 }
@@ -141,30 +141,36 @@ npm run extract
 npm run generate output/i18n-extracted-xxx.json
 ```
 
-这将在目标项目中生成i18n配置文件：
+这将在目标项目中生成语言包配置文件：
 
 ```
 target-project/
 └── src/
-    └── i18n/
+    └── lang/
         ├── index.js           # i18n初始化文件
         └── locales/
-            └── zh-CN.js       # 中文语言包
+            └── zh-CN/         # 中文语言包文件夹
+                ├── common.js  # 公共模块
+                ├── user.js    # 用户模块
+                └── order.js   # 订单模块
 ```
 
-**生成的语言包示例** (`src/i18n/locales/zh-CN.js`):
+**生成的语言包示例** (`src/lang/locales/zh-CN/common.js`):
 
 ```javascript
 export default {
-  "common": {
-    "submit": "提交",
-    "cancel": "取消",
-    "home": "首页"
-  },
-  "user": {
-    "welcome": "欢迎{username}登录",
-    "userManagement": "用户管理"
-  }
+  "submit": "提交",
+  "cancel": "取消",
+  "home": "首页"
+};
+```
+
+**用户模块示例** (`src/lang/locales/zh-CN/user.js`):
+
+```javascript
+export default {
+  "welcome": "欢迎{username}登录",
+  "userManagement": "用户管理"
 };
 ```
 
@@ -204,8 +210,8 @@ export default {
 ```vue
 <template>
   <div>
-    <h1>{{ $t('user.userManagement') }}</h1>
-    <button>{{ $t('common.submit') }}</button>
+    <h1>{{ $t('User.userManagement') }}</h1>
+    <button>{{ $t('Common.submit') }}</button>
   </div>
 </template>
 
@@ -213,7 +219,7 @@ export default {
 export default {
   data() {
     return {
-      message: this.$t('message.operationSuccess')
+      message: this.$t('Message.operationSuccess')
     }
   }
 }

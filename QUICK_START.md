@@ -57,15 +57,16 @@ npm start
 
 **同时自动生成：**
 
-1. **`output/zh-CN.js`** - 中文语言包文件
-   ```javascript
-   export default {
-     common: {
-       首页: "首页",
-       用户管理: "用户管理"
+1. **`output/zh-CN/`** - 中文语言包文件夹，按模块拆分
+   - `common.js` - 公共模块
+     ```javascript
+     export default {
+       "首页": "首页",
+       "用户管理": "用户管理"
      }
-   }
-   ```
+     ```
+   - `user.js` - 用户模块
+   - 其他模块...
 
 2. **`output/translation-template.txt`** - 翻译对照模板文件
    ```
@@ -97,7 +98,7 @@ npm run regenerate output/i18n-extracted-xxx.json
 node src/index.js regenerate output/i18n-extracted-xxx.json
 ```
 
-这会根据修改后的JSON重新生成 `zh-CN.js` 和 `translation-template.txt` 文件。
+这会根据修改后的JSON重新生成 `zh-CN/` 文件夹和 `translation-template.txt` 文件。
 
 ### 第五步：生成其他语言配置（可选）
 
@@ -127,7 +128,7 @@ npm run translate output ja-JP
 npm run translate output ko-KR
 ```
 
-这会在 `output/` 目录生成对应的语言包文件（如 `en-US.js`）。
+这会在 `output/` 目录生成对应的语言包文件夹（如 `en-US/`）。
 
 > 详细文档请参考 [翻译生成指南](./docs/TRANSLATE_GUIDE.md)
 
@@ -138,8 +139,8 @@ node src/index.js generate output/i18n-extracted-xxx.json
 ```
 
 这会在你的 Vue 2 项目中创建：
-- `src/i18n/index.js` - i18n初始化文件（使用 vue-i18n@8.x）
-- `src/i18n/locales/zh-CN.js` - 中文语言包
+- `src/lang/index.js` - i18n初始化文件（使用 vue-i18n@8.x）
+- `src/lang/locales/zh-CN/` - 中文语言包文件夹
 
 ### 第七步：手动集成i18n
 
@@ -148,7 +149,7 @@ node src/index.js generate output/i18n-extracted-xxx.json
 ```javascript
 import Vue from 'vue'
 import App from './App.vue'
-import i18n from './i18n'
+import i18n from './lang'
 
 new Vue({
   i18n,
@@ -174,7 +175,7 @@ npm install vue-i18n
 <h1>首页</h1>
 
 <!-- 替换后 -->
-<h1>{{ $t('common.home') }}</h1>
+<h1>{{ $t('Common.home') }}</h1>
 ```
 
 #### 选项B：自动替换（谨慎使用）

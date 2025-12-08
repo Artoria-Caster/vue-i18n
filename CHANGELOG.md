@@ -2,7 +2,83 @@
 
 本文档记录了项目的所有重要变更和修复。
 
-## [最新版本] - 2025-12-04
+## [最新版本] - 2025-12-08
+
+### 重大变更 🔥
+
+#### 1. 文件夹结构改为模块化 🆕
+- **变更**: 将单文件语言包 (`zh-CN.js`) 改为文件夹结构 (`zh-CN/`)
+- **影响**: 生成的语言包现在按模块拆分为多个独立的 JS 文件
+- **优势**: 
+  - 更清晰的代码组织
+  - 更好的可维护性
+  - 支持按需加载
+
+**新的文件结构**:
+```
+output/
+├── zh-CN/
+│   ├── common.js    # 公共模块
+│   ├── user.js      # 用户模块
+│   └── order.js     # 订单模块
+└── en-US/
+    ├── common.js
+    ├── user.js
+    └── order.js
+```
+
+**文件内容示例** (`common.js`):
+```javascript
+export default {
+  "submit": "提交",
+  "cancel": "取消"
+};
+```
+
+#### 2. Key 命名规则改为大写字母开头 🆕
+- **变更**: 所有生成的 i18n key 现在以大写字母开头
+- **旧格式**: `common.submit`, `user.login`
+- **新格式**: `Common.submit`, `User.login`
+- **使用示例**: `$t('Common.submit')`, `$t('User.login')`
+
+#### 3. 目录名称从 i18n 改为 lang 🆕
+- **变更**: 默认生成目录从 `src/i18n` 改为 `src/lang`
+- **配置项**: `config.json` 中的 `i18nPath` 和 `importPath`
+- **默认值**: 
+  - `i18nPath`: `./src/lang`
+  - `importPath`: `@/lang`
+
+### 更新内容 📝
+
+#### 配置文件更新
+- 更新 `config.json` 中的默认路径配置
+- 更新 `keyMappings` 使用大写字母开头
+- 更新 `keyPrefixes` 使用大写字母开头
+
+#### 生成器更新
+- `localeGenerator.js`: 支持生成模块化文件夹结构
+- `i18nGenerator.js`: 支持生成模块化语言包和动态导入
+- `translationGenerator.js`: 支持读取和生成文件夹结构的语言包
+- `keyGenerator.js`: Key 生成规则改为大写字母开头
+
+#### 替换器更新
+- `replacer/index.js`: 更新跳过规则以支持 `/lang/` 目录
+- 更新导入路径计算以使用配置的 `i18nPath`
+
+#### 文档更新
+- 更新 `README.md` 反映新的文件结构和 key 格式
+- 更新 `QUICK_START.md` 包含新的使用示例
+- 更新相关示例代码
+
+### 向后兼容性 ⚠️
+
+- 翻译生成器保留对旧单文件格式的兼容性
+- 可以读取旧的 `zh-CN.js` 单文件格式
+- 建议新项目使用新的文件夹结构
+
+---
+
+## [2025-12-04]
 
 ### 新增功能 ✨
 
