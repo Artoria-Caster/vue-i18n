@@ -3,7 +3,7 @@ const path = require('path');
 
 /**
  * 翻译生成器
- * 根据zh-CN.js和填充好的translation-template.txt生成其他语言的配置文件
+ * 根据zh-cn.js和填充好的translation-template.txt生成其他语言的配置文件
  */
 class TranslationGenerator {
   constructor(config) {
@@ -11,8 +11,8 @@ class TranslationGenerator {
   }
 
   /**
-   * 读取zh-CN语言包文件夹
-   * @param {string} zhCNPath - zh-CN文件夹路径
+   * 读取zh-cn语言包文件夹
+   * @param {string} zhCNPath - zh-cn文件夹路径
    * @returns {Object} 解析后的中文语言包对象
    */
   readZhCNFile(zhCNPath) {
@@ -28,13 +28,13 @@ class TranslationGenerator {
         return this.readZhCNSingleFile(zhCNPath);
       }
     } catch (error) {
-      throw new Error(`读取zh-CN语言包失败: ${error.message}`);
+      throw new Error(`读取zh-cn语言包失败: ${error.message}`);
     }
   }
 
   /**
-   * 读取zh-CN文件夹中的所有模块
-   * @param {string} folderPath - zh-CN文件夹路径
+   * 读取zh-cn文件夹中的所有模块
+   * @param {string} folderPath - zh-cn文件夹路径
    * @returns {Object} 合并后的语言包对象
    */
   readZhCNFolder(folderPath) {
@@ -73,13 +73,13 @@ class TranslationGenerator {
   }
 
   /**
-   * 读取zh-CN.js单文件(兼容旧格式)
-   * @param {string} zhCNPath - zh-CN.js文件路径
+   * 读取zh-cn.js单文件(兼容旧格式)
+   * @param {string} zhCNPath - zh-cn.js文件路径
    * @returns {Object} 解析后的中文语言包对象
    */
   readZhCNSingleFile(zhCNPath) {
     if (!fs.existsSync(zhCNPath)) {
-      throw new Error(`zh-CN.js文件不存在: ${zhCNPath}`);
+      throw new Error(`zh-cn.js文件不存在: ${zhCNPath}`);
     }
 
     const content = fs.readFileSync(zhCNPath, 'utf-8');
@@ -90,7 +90,7 @@ class TranslationGenerator {
       .replace(/\r\n/g, '\n');
     
     // 创建临时文件以便require
-    const tempFile = path.resolve(path.dirname(zhCNPath), '.temp_zh-CN.js');
+    const tempFile = path.resolve(path.dirname(zhCNPath), '.temp_zh-cn.js');
     fs.writeFileSync(tempFile, cleanContent, 'utf-8');
     
     // 清除require缓存
@@ -216,17 +216,17 @@ class TranslationGenerator {
 
   /**
    * 生成目标语言的配置文件
-   * @param {string} zhCNPath - zh-CN文件夹或文件路径
+   * @param {string} zhCNPath - zh-cn文件夹或文件路径
    * @param {string} templatePath - translation-template.txt文件路径
-   * @param {string} targetLang - 目标语言代码，如 'en-US', 'ja-JP' 等
-   * @param {string} outputDir - 输出目录，默认为zh-CN所在目录
+   * @param {string} targetLang - 目标语言代码，如 'en-us', 'ja-jp' 等
+   * @param {string} outputDir - 输出目录，默认为zh-cn所在目录
    * @returns {string} 生成的文件夹或文件路径
    */
-  async generate(zhCNPath, templatePath, targetLang = 'en-US', outputDir = null) {
+  async generate(zhCNPath, templatePath, targetLang = 'en-us', outputDir = null) {
     console.log(`\n开始生成${targetLang}语言包...`);
     
-    // 1. 读取zh-CN
-    console.log('1. 读取zh-CN语言包...');
+    // 1. 读取zh-cn
+    console.log('1. 读取zh-cn语言包...');
     const zhCNData = this.readZhCNFile(zhCNPath);
     console.log(`   ✓ 成功读取中文语言包`);
 
@@ -253,8 +253,8 @@ class TranslationGenerator {
     const stats_zhCN = fs.statSync(zhCNPath);
     
     if (stats_zhCN.isDirectory()) {
-      // 生成文件夹结构
-      const outputFolderPath = path.join(output, targetLang);
+      // 生成文件夹结构，将语言代码转换为小写
+      const outputFolderPath = path.join(output, targetLang.toLowerCase());
       await fs.promises.mkdir(outputFolderPath, { recursive: true });
       
       const moduleFiles = [];
@@ -276,8 +276,8 @@ class TranslationGenerator {
       
       return outputFolderPath;
     } else {
-      // 生成单文件（兼容旧格式）
-      const outputPath = path.join(output, `${targetLang}.js`);
+      // 生成单文件（兼容旧格式），将语言代码转换为小写
+      const outputPath = path.join(output, `${targetLang.toLowerCase()}.js`);
       const fileContent = `export default ${this.formatObjectToJS(translatedData, 0)};\n`;
       await fs.promises.writeFile(outputPath, fileContent, 'utf-8');
       

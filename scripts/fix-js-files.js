@@ -1,6 +1,6 @@
 /**
  * 修复普通JS文件中错误的 this.$t() 调用
- * 将其替换为 i18n.t() 并添加导入语句
+ * 将其替换为 lang.t() 并添加导入语句
  */
 
 const fs = require('fs');
@@ -28,9 +28,9 @@ async function fixFile(filePath) {
     return false;
   }
 
-  // 跳过 i18n 目录本身
-  if (filePath.includes('\\i18n\\') || filePath.includes('/i18n/')) {
-    console.log(`跳过 i18n 目录文件: ${fileName}`);
+  // 跳过 lang 目录本身
+  if (filePath.includes('\\lang\\') || filePath.includes('/lang/')) {
+    console.log(`跳过 lang 目录文件: ${fileName}`);
     return false;
   }
 
@@ -44,19 +44,19 @@ async function fixFile(filePath) {
 
   console.log(`正在修复: ${filePath}`);
 
-  // 替换 this.$t( 为 i18n.t(
-  content = content.replace(/this\.\$t\(/g, 'i18n.t(');
+  // 替换 this.$t( 为 lang.t(
+  content = content.replace(/this\.\$t\(/g, 'lang.t(');
 
-  // 检查是否已经有 i18n 导入
-  const hasI18nImport = content.match(/import\s+i18n\s+from\s+['"]/);
+  // 检查是否已经有 lang 导入
+  const hasI18nImport = content.match(/import\s+lang\s+from\s+['"]/i);
 
   if (!hasI18nImport && content !== originalContent) {
     // 计算相对路径
     const fileDir = path.dirname(filePath);
     const projectRoot = 'd:/LZY/Projects/vue-i18n/examples/vue2-demo';
-    const i18nPath = path.join(projectRoot, 'src', 'i18n', 'index.js');
+    const langPath = path.join(projectRoot, 'src', 'lang', 'index.js');
     
-    let relativePath = path.relative(fileDir, i18nPath);
+    let relativePath = path.relative(fileDir, langPath);
     relativePath = relativePath.replace(/\\/g, '/');
     if (!relativePath.startsWith('.')) {
       relativePath = './' + relativePath;
@@ -64,7 +64,7 @@ async function fixFile(filePath) {
     relativePath = relativePath.replace(/\.js$/, '');
 
     // 在文件开头添加导入
-    const importStatement = `import i18n from '${relativePath}';\n`;
+    const importStatement = `import lang from '${relativePath}';\n`;
     content = importStatement + content;
   }
 

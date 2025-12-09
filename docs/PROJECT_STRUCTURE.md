@@ -115,7 +115,7 @@ i18n-extracted-xxx.json
     ↓
 [I18nGenerator] 生成i18n配置
     ↓
-i18n/locales/zh-CN.js + index.js
+lang/zh-CN/*.js + lang/index.js
     ↓
 [Replacer] 替换源代码（可选）
     ↓

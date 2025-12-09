@@ -10,7 +10,10 @@
     "dist",
     ".git",
     "build",
-    "public"
+    "public",
+    "i18n",
+    "locales",
+    "lang"
   ],
   "excludeFiles": [
     "*.min.js",
@@ -23,7 +26,6 @@
     "backup": true,
     "backupDir": "./backup",
     "preview": false,
-    "i18nPath": "./src/lang",
     "importPath": "@/lang",
     "generateEnglish": false,
     "keyStrategy": "semantic",

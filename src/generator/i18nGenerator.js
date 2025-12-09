@@ -16,14 +16,12 @@ class I18nGenerator {
   /**
    * 生成i18n配置文件
    * @param {Object} extractedData 提取的数据
-   * @param {string} targetProjectPath 目标项目路径
+   * @param {string} outputDir 输出目录（通常是output目录）
    */
-  async generate(extractedData, targetProjectPath) {
+  async generate(extractedData, outputDir) {
     try {
-      const i18nPath = path.join(
-        targetProjectPath,
-        this.config.autoReplace?.i18nPath || './src/lang'
-      );
+      // 在output目录下创建lang文件夹
+      const i18nPath = path.join(outputDir, 'lang');
 
       // 创建i18n目录结构
       await this.createDirectories(i18nPath);
@@ -32,11 +30,11 @@ class I18nGenerator {
       const keyMap = this.generateKeyMap(extractedData);
 
       // 生成中文语言包
-      await this.generateLocaleFile(i18nPath, 'zh-CN', keyMap);
+      await this.generateLocaleFile(i18nPath, 'zh-cn', keyMap);
 
       // 可选：生成英文语言包
       if (this.config.autoReplace?.generateEnglish) {
-        await this.generateLocaleFile(i18nPath, 'en-US', keyMap, true);
+        await this.generateLocaleFile(i18nPath, 'en-us', keyMap, true);
       }
 
       // 生成i18n初始化文件
@@ -44,7 +42,7 @@ class I18nGenerator {
 
       console.log('\n✓ i18n配置文件已生成');
       console.log(`  - 位置: ${i18nPath}`);
-      console.log(`  - 语言包: zh-CN.js${this.config.autoReplace?.generateEnglish ? ', en-US.js' : ''}`);
+      console.log(`  - 语言包: zh-cn${this.config.autoReplace?.generateEnglish ? ', en-us' : ''}`);
       console.log(`  - 初始化文件: index.js\n`);
 
       return keyMap;
@@ -59,10 +57,7 @@ class I18nGenerator {
    * @param {string} i18nPath
    */
   async createDirectories(i18nPath) {
-    const localesPath = path.join(i18nPath, 'locales');
-    
     await fs.promises.mkdir(i18nPath, { recursive: true });
-    await fs.promises.mkdir(localesPath, { recursive: true });
   }
 
   /**
@@ -311,10 +306,9 @@ class I18nGenerator {
    */
   async generateLocaleFile(i18nPath, locale, keyMap, isEnglish = false) {
     const { messages } = keyMap;
-    const localesPath = path.join(i18nPath, 'locales');
     
-    // 创建语言文件夹 (如 zh-CN, en-US)
-    const localeFolderPath = path.join(localesPath, locale);
+    // 创建语言文件夹 (如 zh-CN, en-US),直接放在lang目录下
+    const localeFolderPath = path.join(i18nPath, locale);
     await fs.promises.mkdir(localeFolderPath, { recursive: true });
 
     // 为每个模块生成独立的 js 文件
@@ -343,8 +337,8 @@ class I18nGenerator {
 import VueI18n from 'vue-i18n';
 
 // 使用 require.context 动态导入语言包模块 (兼容 webpack)
-const zhCNContext = require.context('./locales/zh-CN', false, /\.js$/);
-${this.config.autoReplace?.generateEnglish ? "const enUSContext = require.context('./locales/en-US', false, /\\.js$/);" : ''}
+const zhCNContext = require.context('./zh-cn', false, /\.js$/);
+${this.config.autoReplace?.generateEnglish ? "const enUSContext = require.context('./en-us', false, /\\.js$/);" : ''}
 
 // 合并模块
 const zhCN = {};
@@ -363,15 +357,15 @@ enUSContext.keys().forEach(key => {
 ` : ''}
 Vue.use(VueI18n);
 
-const i18n = new VueI18n({
-  locale: 'zh-CN',
-  fallbackLocale: 'zh-CN',
+const lang = new VueI18n({
+  locale: 'zh-cn',
+  fallbackLocale: 'zh-cn',
   messages: {
-    'zh-CN': zhCN${this.config.autoReplace?.generateEnglish ? ",\n    'en-US': enUS" : ''}
+    'zh-cn': zhCN${this.config.autoReplace?.generateEnglish ? ",\n    'en-us': enUS" : ''}
   }
 });
 
-export default i18n;
+export default lang;
 `;
 
     const filePath = path.join(i18nPath, 'index.js');

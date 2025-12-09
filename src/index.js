@@ -123,13 +123,14 @@ class I18nTool {
     console.log('读取提取的JSON文件...');
     const extractedData = await this.generator.readExtractedJson(jsonFilePath);
 
-    // 生成i18n配置
+    // 生成i18n配置到output目录
     console.log('生成i18n配置文件...');
-    const targetProjectPath = path.resolve(this.config.targetProject);
-    const keyMap = await this.i18nGenerator.generate(extractedData, targetProjectPath);
+    const outputDir = path.dirname(jsonFilePath); // 获取JSON文件所在目录（output目录）
+    const keyMap = await this.i18nGenerator.generate(extractedData, outputDir);
 
     console.log('========================================');
     console.log('生成完成！');
+    console.log('请手动将 output/lang 文件夹复制到项目中并引入');
     console.log('========================================\n');
 
     return keyMap;
@@ -156,33 +157,33 @@ class I18nTool {
     console.log('\n========================================');
     console.log('重新生成完成！');
     console.log(`输出目录: ${outputDir}`);
-    console.log('  - zh-CN.js (语言包文件)');
+    console.log('  - zh-cn.js (语言包文件)');
     console.log('  - translation-template.txt (翻译对照模板)');
     console.log('========================================\n');
   }
 
   /**
-   * 根据zh-CN和翻译模板生成其他语言的配置文件
-   * @param {string} outputDir 输出目录（包含zh-CN文件夹/文件和translation-template.txt）
-   * @param {string} targetLang 目标语言代码，默认为en-US
+   * 根据zh-cn和翻译模板生成其他语言的配置文件
+   * @param {string} outputDir 输出目录（包含zh-cn文件夹/文件和translation-template.txt）
+   * @param {string} targetLang 目标语言代码，默认为en-us
    */
-  async translate(outputDir, targetLang = 'en-US') {
+  async translate(outputDir, targetLang = 'en-us') {
     console.log('\n========================================');
     console.log('  Vue i18n 自动转换工具 - 翻译生成模式');
     console.log('========================================\n');
 
-    // 先检查是否存在 zh-CN 文件夹，不存在则检查 zh-CN.js 文件（兼容旧格式）
-    let zhCNPath = path.join(outputDir, 'zh-CN');
+    // 先检查是否存在 zh-cn 文件夹，不存在则检查 zh-cn.js 文件（兼容旧格式）
+    let zhCNPath = path.join(outputDir, 'zh-cn');
     if (!fs.existsSync(zhCNPath)) {
-      zhCNPath = path.join(outputDir, 'zh-CN.js');
+      zhCNPath = path.join(outputDir, 'zh-cn.js');
     }
     
     const templatePath = path.join(outputDir, 'translation-template.txt');
 
     // 检查必需文件是否存在
     if (!fs.existsSync(zhCNPath)) {
-      console.error(`错误: 未找到 zh-CN 文件夹或 zh-CN.js 文件: ${zhCNPath}`);
-      console.log('请先运行 npm run regenerate <json文件> 生成 zh-CN 语言包');
+      console.error(`错误: 未找到 zh-cn 文件夹或 zh-cn.js 文件: ${zhCNPath}`);
+      console.log('请先运行 npm run regenerate <json文件> 生成 zh-cn 语言包');
       return;
     }
 
@@ -224,17 +225,19 @@ class I18nTool {
     console.log('读取提取的JSON文件...');
     const extractedData = await this.generator.readExtractedJson(jsonFilePath);
 
-    // 生成key映射
+    // 生成key映射（输出到output目录）
     console.log('生成key映射...');
-    const targetProjectPath = path.resolve(this.config.targetProject);
-    const keyMap = await this.i18nGenerator.generate(extractedData, targetProjectPath);
+    const outputDir = path.dirname(jsonFilePath);
+    const keyMap = await this.i18nGenerator.generate(extractedData, outputDir);
 
     // 执行替换
     console.log(`${preview ? '预览' : '执行'}替换...\n`);
+    const targetProjectPath = path.resolve(this.config.targetProject);
     await this.replacer.replace(keyMap, targetProjectPath, preview);
 
     console.log('\n========================================');
     console.log(`${preview ? '预览' : '替换'}完成！`);
+    console.log('如果已修改代码，请手动将 output/lang 文件夹复制到项目中');
     console.log('========================================\n');
   }
 
@@ -417,11 +420,11 @@ function main() {
 
   program
     .command('translate [outputDir] [targetLang]')
-    .description('根据zh-CN.js和填好的translation-template.txt生成其他语言的配置文件')
+    .description('根据zh-cn.js和填好的translation-template.txt生成其他语言的配置文件')
     .action(async (outputDir, targetLang) => {
       const tool = new I18nTool();
       const dir = outputDir || tool.config.outputDir || './output';
-      const lang = targetLang || 'en-US';
+      const lang = targetLang || 'en-us';
       await tool.translate(dir, lang);
     });
 

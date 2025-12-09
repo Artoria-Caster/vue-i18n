@@ -96,7 +96,7 @@ node src/index.js generate output/i18n-extracted-2025-12-03_12-00-00.json
 ```javascript
 import Vue from 'vue';
 import VueI18n from 'vue-i18n';
-import zhCN from './locales/zh-CN';
+import zhCN from './zh-CN';
 
 Vue.use(VueI18n);
 
@@ -111,7 +111,7 @@ const i18n = new VueI18n({
 export default i18n;
 ```
 
-`examples/example-project/src/i18n/locales/zh-CN.js`:
+`examples/example-project/src/i18n/zh-CN.js`:
 ```javascript
 export default {
   "common": {

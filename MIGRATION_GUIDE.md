@@ -1,14 +1,30 @@
-# 迁移指南：从旧版本升级到新版本
+# 迁移指南：升级到最新版本（2025-12-09）
 
 如果您的项目正在使用旧版本的 vue-i18n 工具，本指南将帮助您顺利迁移到新版本。
 
+## 重大变更：i18n配置不再生成到项目内部
+
+**最重要的变更**: 从 2025-12-09 版本开始，工具不再将 i18n 配置直接生成到目标项目内部，而是统一输出到 `output/lang` 目录，需要用户手动复制到项目中。
+
+### 为什么做这个变更？
+
+1. **安全性**: 避免意外修改目标项目的文件结构
+2. **灵活性**: 可以先检查生成的文件再决定是否使用
+3. **可控性**: 用户完全控制 i18n 配置的集成时机和方式
+4. **兼容性**: 更容易适配不同的项目结构和构建工具
+
+---
+
 ## 主要变更概览
 
-| 项目 | 旧版本 | 新版本 |
-|------|--------|--------|
-| 目录名称 | `src/i18n` | `src/lang` |
-| 文件结构 | `zh-CN.js` (单文件) | `zh-CN/` (文件夹) |
-| Key 格式 | `common.submit` | `Common.submit` |
+| 项目 | 旧版本 | 新版本 (2025-12-09) |
+|------|--------|---------------------|
+| 输出位置 | `your-project/src/lang` | `output/lang` (需手动复制) |
+| 配置项 | `autoReplace.i18nPath` | 移除此配置项 |
+| 集成方式 | 自动生成到项目 | 手动复制到项目 |
+| 目录名称 | `src/i18n` → `src/lang` | 统一为 `lang` |
+| 文件结构 | `zh-CN.js` (单文件) | `zh-CN/` (文件夹，模块化) |
+| Key 格式 | `common.submit` | `Common.submit` (首字母大写) |
 | 导入路径 | `@/i18n` | `@/lang` |
 
 ---
@@ -17,54 +33,149 @@
 
 ### 步骤 1: 更新配置文件
 
-编辑项目根目录的 `config.json`:
+编辑项目根目录的 `config.json`，移除 `i18nPath` 配置：
 
+**旧版本配置**:
 ```json
 {
   "autoReplace": {
-    "i18nPath": "./src/lang",      // 从 ./src/i18n 改为 ./src/lang
-    "importPath": "@/lang"          // 从 @/i18n 改为 @/lang
-  },
+    "enabled": true,
+    "i18nPath": "./src/lang",      // ← 需要移除
+    "importPath": "@/lang"
+  }
+}
+```
+
+**新版本配置**:
+```json
+{
+  "autoReplace": {
+    "enabled": true,
+    // "i18nPath": "./src/lang",   // ← 已移除
+    "importPath": "@/lang"           // ← 保留，用于替换时的import路径
+  }
+}
+```
+
+### 步骤 2: 更新工作流程
+
+#### 旧的工作流程:
+```bash
+# 1. 提取
+npm run extract
+
+# 2. 生成（直接生成到目标项目）
+npm run generate output/i18n-extracted-xxx.json
+# → 生成到: your-project/src/lang/
+
+# 3. 替换
+npm run replace output/i18n-extracted-xxx.json
+```
+
+#### 新的工作流程:
+```bash
+# 1. 提取（相同）
+npm run extract
+
+# 2. 生成（输出到output目录）
+npm run generate output/i18n-extracted-xxx.json
+# → 生成到: output/lang/
+
+# 3. 手动复制到项目（新增步骤）
+# Windows:
+xcopy /E /I output\lang your-project\src\lang
+
+# Linux/Mac:
+cp -r output/lang your-project/src/lang
+
+# 4. 在main.js中引入i18n（如果还没有）
+# 编辑 your-project/src/main.js
+
+# 5. 替换（可选）
+npm run replace output/i18n-extracted-xxx.json
+```
+
+### 步骤 3: 手动集成 i18n 配置
+
+如果你的项目还没有集成 i18n，需要完成以下步骤：
+
+#### 3.1 复制 lang 文件夹
+
+将 `output/lang` 文件夹复制到项目的 `src` 目录：
+
+**Windows (PowerShell/CMD)**:
+```bash
+xcopy /E /I output\lang your-project\src\lang
+```
+
+**Linux/Mac**:
+```bash
+cp -r output/lang your-project/src/lang
+```
+
+#### 3.2 安装 vue-i18n
+
+```bash
+cd your-project
+npm install vue-i18n@8
+```
+
+#### 3.3 更新 main.js
+
+**旧版本 (如果有)**:
+```javascript
+import i18n from './i18n'  // 旧路径
+```
+
+**新版本**:
+```javascript
+import Vue from 'vue'
+import App from './App.vue'
+import i18n from './lang'  // 新路径
+
+new Vue({
+  i18n,
+  render: h => h(App)
+}).$mount('#app')
+```
+
+### 步骤 4: 更新 Key 映射配置
+
+如果使用了 `keyMappings` 和 `keyPrefixes`，需要更新为大写字母开头：
+
+```json
+{
   "keyMappings": {
-    "提交": "Common.submit",         // 从 common.submit 改为 Common.submit
-    "取消": "Common.cancel",         // 首字母大写
+    "提交": "Common.submit",      // 从 common.submit 改为 Common.submit
+    "取消": "Common.cancel",
     "确认": "Common.confirm"
   },
   "keyPrefixes": {
-    "src/views/user/": "User.",      // 从 user. 改为 User.
-    "src/views/admin/": "Admin.",    // 首字母大写
+    "src/views/user/": "User.",   // 从 user. 改为 User.
+    "src/views/admin/": "Admin.",
     "src/components/common/": "Common."
   }
 }
 ```
 
-### 步骤 2: 更新 Vue 项目中的导入路径
+### 步骤 5: 验证迁移
 
-#### 2.1 更新 main.js
+启动项目验证是否正常工作：
 
-**旧版本**:
-```javascript
-import i18n from './i18n'
-```
-
-**新版本**:
-```javascript
-import i18n from './lang'
-```
-
-#### 2.2 重命名目录
-
-在 Vue 项目中：
 ```bash
-cd your-vue-project/src
-mv i18n lang
+cd your-project
+npm run serve
 ```
 
-### 步骤 3: 转换语言包结构
+---
+
+## 旧版本的语言包结构迁移
+
+如果你已经有旧版本生成的语言包，需要了解新旧结构的差异：
 
 #### 3.1 旧的单文件结构
 
-**旧版本** (`src/i18n/locales/zh-CN.js`):
+**旧版本** (`src/i18n/locales/zh-CN.js` 或 `src/lang/locales/zh-CN.js`):
 ```javascript
 export default {
   common: {
@@ -80,7 +191,7 @@ export default {
 
 #### 3.2 新的文件夹结构
 
-**新版本** (`src/lang/locales/zh-CN/common.js`):
+**新版本** (`src/lang/zh-CN/common.js`):
 ```javascript
 export default {
   "submit": "提交",
@@ -88,7 +199,7 @@ export default {
 }
 ```
 
-**新版本** (`src/lang/locales/zh-CN/user.js`):
+**新版本** (`src/lang/zh-CN/user.js`):
 ```javascript
 export default {
   "login": "登录",
@@ -100,8 +211,8 @@ export default {
 
 **旧版本** (`src/i18n/index.js`):
 ```javascript
-import zhCN from './locales/zh-CN'
-import enUS from './locales/en-US'
+import zhCN from './zh-CN'
+import enUS from './en-US'
 
 const i18n = new VueI18n({
   locale: 'zh-CN',
@@ -115,20 +226,20 @@ const i18n = new VueI18n({
 **新版本** (`src/lang/index.js`):
 ```javascript
 // 使用动态导入加载所有模块
-const zhCNModules = import.meta.glob('./locales/zh-CN/*.js', { eager: true });
-const enUSModules = import.meta.glob('./locales/en-US/*.js', { eager: true });
+const zhCNModules = import.meta.glob('./zh-CN/*.js', { eager: true });
+const enUSModules = import.meta.glob('./en-US/*.js', { eager: true });
 
 // 合并模块
 const zhCN = {};
 Object.keys(zhCNModules).forEach(key => {
-  const moduleName = key.replace('./locales/zh-CN/', '').replace('.js', '');
+  const moduleName = key.replace('./zh-CN/', '').replace('.js', '');
   const capitalizedName = moduleName.charAt(0).toUpperCase() + moduleName.slice(1);
   zhCN[capitalizedName] = zhCNModules[key].default;
 });
 
 const enUS = {};
 Object.keys(enUSModules).forEach(key => {
-  const moduleName = key.replace('./locales/en-US/', '').replace('.js', '');
+  const moduleName = key.replace('./en-US/', '').replace('.js', '');
   const capitalizedName = moduleName.charAt(0).toUpperCase() + moduleName.slice(1);
   enUS[capitalizedName] = enUSModules[key].default;
 });
@@ -146,7 +257,7 @@ const i18n = new VueI18n({
 
 **Webpack 版本**:
 ```javascript
-const zhCNContext = require.context('./locales/zh-CN', false, /\.js$/);
+const zhCNContext = require.context('./zh-CN', false, /\.js$/);
 const zhCN = {};
 
 zhCNContext.keys().forEach(key => {
@@ -278,7 +389,7 @@ if (fs.existsSync(oldDir)) {
 }
 
 // 2. 转换单文件为文件夹结构
-const zhCNFile = path.join(newDir, 'locales/zh-CN.js');
+const zhCNFile = path.join(newDir, 'zh-CN.js');
 if (fs.existsSync(zhCNFile)) {
   const content = fs.readFileSync(zhCNFile, 'utf-8');
   // 解析并转换...

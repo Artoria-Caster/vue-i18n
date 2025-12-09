@@ -2,7 +2,120 @@
 
 本文档记录了项目的所有重要变更和修复。
 
-## [最新版本] - 2025-12-08
+## [最新版本] - 2025-12-09
+
+### 重大变更 🔥
+
+#### 1. 简化语言包目录结构 🆕
+- **变更**: 翻译配置文件直接放在 `lang` 文件夹下，不再使用 `lang/locales` 子文件夹
+- **影响**: 生成的目录结构从 `lang/locales/zh-CN/` 变为 `lang/zh-CN/`
+- **优势**:
+  - ✅ 目录结构更简洁直观
+  - ✅ 减少一层嵌套,更容易理解
+  - ✅ 与现代Vue项目结构更一致
+
+**新的输出结构**:
+```
+output/
+├── i18n-extracted-xxx.json       # 提取的中文文本
+├── zh-CN/                        # 语言包文件夹（仅供查看）
+│   ├── common.js
+│   └── user.js
+├── translation-template.txt      # 翻译对照模板
+└── lang/                         # i18n配置文件夹（需要手动复制到项目）
+    ├── index.js
+    └── zh-CN/                    # 直接放在lang下
+        ├── common.js
+        └── user.js
+```
+
+**手动集成步骤**:
+```bash
+# 1. 复制lang文件夹到项目
+cp -r output/lang your-project/src/lang
+
+# 2. 在main.js中引入
+import i18n from './lang'
+```
+
+详细说明请参考: [docs/MANUAL_INTEGRATION.md](./docs/MANUAL_INTEGRATION.md)
+
+#### 2. i18n配置统一输出到output目录
+- **变更**: 不再在目标项目内部生成i18n配置，所有文件统一输出到 `output` 目录
+- **影响**: 需要手动将 `output/lang` 文件夹复制到项目中
+- **优势**:
+  - ✅ 不会意外修改目标项目的文件结构
+  - ✅ 可以先检查生成的文件再决定是否使用
+  - ✅ 更灵活的集成方式，可以根据项目需求调整
+  - ✅ 更安全，避免覆盖现有配置
+
+#### 3. 移除 config.json 中的 i18nPath 配置 🗑️
+- **变更**: 移除了 `autoReplace.i18nPath` 配置项
+- **原因**: 所有输出统一到 `output/lang` 目录，不再需要指定目标项目中的路径
+- **保留**: `importPath` 配置保留，用于自动替换时的 import 语句
+
+**配置变更对比**:
+```json
+// 旧配置
+{
+  "autoReplace": {
+    "i18nPath": "./src/lang",  // 已移除
+    "importPath": "@/lang"     // 保留
+  }
+}
+
+// 新配置
+{
+  "autoReplace": {
+    "importPath": "@/lang"     // 仅保留这个，用于替换时的import路径
+  }
+}
+```
+
+### 新增功能 ✨
+
+#### 1. 新增手动集成指南文档
+- 新增 `docs/MANUAL_INTEGRATION.md` 文档
+- 详细说明如何手动将生成的配置集成到项目中
+- 包含 Vite 项目的集成方式
+- 提供常见问题解答
+
+### 改进 🔧
+
+#### 1. 更新命令行提示
+- `generate` 命令现在会提示用户手动复制文件
+- `replace` 命令现在会提示lang文件夹的位置
+- 更清晰的操作指引
+
+#### 2. 更新文档
+- 更新 `README.md`，说明新的工作流程
+- 更新 `QUICK_START.md`，添加手动集成步骤
+- 添加手动集成指南链接
+
+### 迁移指南 📖
+
+如果你正在使用旧版本，需要做以下调整：
+
+1. **更新 config.json**:
+   ```json
+   // 移除这一行
+   "i18nPath": "./src/lang",
+   ```
+
+2. **使用新的工作流程**:
+   ```bash
+   # 生成配置
+   npm run generate output/i18n-extracted-xxx.json
+   
+   # 手动复制到项目
+   cp -r output/lang your-project/src/lang
+   ```
+
+3. **手动集成i18n**: 参考 [docs/MANUAL_INTEGRATION.md](./docs/MANUAL_INTEGRATION.md)
+
+---
+
+## [v1.0.1] - 2025-12-08
 
 ### 重大变更 🔥
 

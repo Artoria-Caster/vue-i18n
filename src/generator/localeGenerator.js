@@ -23,8 +23,8 @@ class LocaleGenerator {
       // 生成key映射和消息对象
       const { keyMap, messages } = this.generateKeyMap(extractedData);
 
-      // 创建 zh-CN 文件夹并生成模块文件
-      const localeFolderPath = path.join(outputDir, 'zh-CN');
+      // 创建 zh-cn 文件夹并生成模块文件
+      const localeFolderPath = path.join(outputDir, 'zh-cn');
       await fs.promises.mkdir(localeFolderPath, { recursive: true });
       
       // 为每个模块生成独立的 js 文件
@@ -35,7 +35,7 @@ class LocaleGenerator {
       await this.generateTranslationTemplate(translationFilePath, messages);
 
       console.log('\n✓ 语言包文件已生成');
-      console.log(`  - zh-CN 文件夹: ${localeFolderPath}`);
+      console.log(`  - zh-cn 文件夹: ${localeFolderPath}`);
       moduleFiles.forEach(file => {
         console.log(`    - ${path.basename(file)}`);
       });
@@ -264,7 +264,7 @@ class LocaleGenerator {
     lines.push('# 格式说明：');
     lines.push('# 每行格式为：中文文本 = 翻译文本');
     lines.push('# 请在等号后面填写对应的翻译内容');
-    lines.push('# 支持变量占位符 {变量名}');
+    lines.push('# 支持变量占位符 {变量名}' );
     lines.push('');
     lines.push('# ==========================================');
     lines.push('');

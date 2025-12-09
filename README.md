@@ -7,6 +7,7 @@
 ## 📚 文档导航
 
 - **快速开始**: [QUICK_START.md](./QUICK_START.md) - 5分钟快速上手指南
+- **手动集成指南**: [docs/MANUAL_INTEGRATION.md](./docs/MANUAL_INTEGRATION.md) - 如何手动将生成的配置集成到项目中
 - **变更日志**: [CHANGELOG.md](./CHANGELOG.md) - 查看最新更新和修复
 - **详细文档**: [docs/](./docs/) - 更多技术文档
   - [项目结构说明](./docs/PROJECT_STRUCTURE.md)
@@ -141,21 +142,25 @@ npm run extract
 npm run generate output/i18n-extracted-xxx.json
 ```
 
-这将在目标项目中生成语言包配置文件：
+这将在output目录中生成语言包配置文件：
 
 ```
-target-project/
-└── src/
-    └── lang/
-        ├── index.js           # i18n初始化文件
-        └── locales/
-            └── zh-CN/         # 中文语言包文件夹
-                ├── common.js  # 公共模块
-                ├── user.js    # 用户模块
-                └── order.js   # 订单模块
+output/
+├── i18n-extracted-xxx.json
+├── zh-cn/                 # 中文语言包文件夹
+│   ├── common.js          # 公共模块
+│   ├── user.js            # 用户模块
+│   └── order.js           # 订单模块
+├── translation-template.txt
+└── lang/                  # i18n配置文件夹（新）
+    ├── index.js           # i18n初始化文件
+    └── zh-cn/             # 中文语言包（与上面的zh-cn相同）
+        ├── common.js
+        ├── user.js
+        └── order.js
 ```
 
-**生成的语言包示例** (`src/lang/locales/zh-CN/common.js`):
+**生成的语言包示例** (`output/lang/zh-cn/common.js`):
 
 ```javascript
 export default {
@@ -165,13 +170,64 @@ export default {
 };
 ```
 
-**用户模块示例** (`src/lang/locales/zh-CN/user.js`):
+**用户模块示例** (`output/lang/zh-cn/user.js`):
 
 ```javascript
 export default {
   "welcome": "欢迎{username}登录",
   "userManagement": "用户管理"
 };
+```
+
+**i18n初始化文件** (`output/lang/index.js`):
+
+```javascript
+import Vue from 'vue';
+import VueI18n from 'vue-i18n';
+
+// 使用 require.context 动态导入语言包模块
+const zhCNContext = require.context('./zh-cn', false, /\.js$/);
+
+// 合并模块
+const zhCN = {};
+zhCNContext.keys().forEach(key => {
+  const moduleName = key.replace('./', '').replace('.js', '');
+  const capitalizedName = moduleName.charAt(0).toUpperCase() + moduleName.slice(1);
+  zhCN[capitalizedName] = zhCNContext(key).default;
+});
+
+Vue.use(VueI18n);
+
+const lang = new VueI18n({
+  locale: 'zh-cn',
+  fallbackLocale: 'zh-cn',
+  messages: {
+    'zh-cn': zhCN
+  }
+});
+
+export default lang;
+```
+
+#### 2.1 手动集成到项目
+
+将生成的 `output/lang` 文件夹复制到你的Vue项目中（通常是 `src/lang`），然后在 `main.js` 中引入：
+
+```javascript
+import Vue from 'vue'
+import App from './App.vue'
+import lang from './lang'  // 引入lang配置
+
+new Vue({
+  lang,
+  render: h => h(App)
+}).$mount('#app')
+```
+
+确保已安装 vue-i18n（Vue 2需要8.x版本）：
+
+```bash
+npm install vue-i18n@8
 ```
 
 #### 3. 替换源代码（可选）
@@ -281,15 +337,15 @@ npm run verify       # 验证项目文件
 
 **快速使用**：
 
-1. 运行 `npm run regenerate` 生成 `zh-CN.js` 和 `translation-template.txt`
+1. 运行 `npm run regenerate` 生成 `zh-cn.js` 和 `translation-template.txt`
 2. 编辑 `translation-template.txt`，填写翻译内容
-3. 运行 `npm run translate output en-US` 生成英语配置文件
+3. 运行 `npm run translate output en-us` 生成英语配置文件
 
 支持的语言代码示例：
-- `en-US` - 英语（美国）
-- `ja-JP` - 日语（日本）
-- `ko-KR` - 韩语（韩国）
-- `fr-FR` - 法语（法国）
+- `en-us` - 英语（美国）
+- `ja-jp` - 日语（日本）
+- `ko-kr` - 韩语（韩国）
+- `fr-fr` - 法语（法国）
 - 等其他标准语言代码
 
 ## 配置说明
@@ -312,9 +368,10 @@ npm run verify       # 验证项目文件
 | `backup` | 是否备份原文件 | `true` |
 | `backupDir` | 备份目录 | `./backup` |
 | `preview` | 预览模式 | `false` |
-| `i18nPath` | i18n配置目录 | `./src/i18n` |
-| `importPath` | 导入路径别名 | `@/i18n` |
+| `importPath` | 导入路径别名（用于替换时的import语句） | `@/lang` |
 | `keyStrategy` | key生成策略 | `semantic` |
+
+**注意**: `i18nPath` 配置已移除，所有输出统一到 `output/lang` 目录，需要手动复制到项目中。
 
 ### Key映射配置
 

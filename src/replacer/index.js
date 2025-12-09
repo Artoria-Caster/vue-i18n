@@ -331,7 +331,7 @@ class Replacer {
       const self = this; // 保存this引用
 
       // 决定使用哪种i18n调用方式
-      const i18nMethod = isVueComponent ? 'this.$t' : 'i18n.t';
+      const i18nMethod = isVueComponent ? 'this.$t' : 'lang.t';
       if (!isVueComponent) {
         needsI18nImport = true;
       }
@@ -441,9 +441,9 @@ class Replacer {
         });
         let code = output.code;
 
-        // 如果需要导入i18n且还没有导入
-        if (needsI18nImport && !code.includes("import i18n from")) {
-          // 查找i18n目录的相对路径
+        // 如果需要导入lang且还没有导入
+        if (needsI18nImport && !code.includes("import lang from")) {
+          // 查找lang目录的相对路径
           const i18nImport = this.generateI18nImport(filePath);
           code = i18nImport + code;
         }
@@ -465,7 +465,7 @@ class Replacer {
    */
   generateI18nImport(filePath) {
     if (!filePath) {
-      return "import i18n from '@/i18n';\n";
+      return "import lang from '@/lang';\n";
     }
     
     // 计算相对路径
@@ -484,7 +484,7 @@ class Replacer {
     // 移除 .js 扩展名
     relativePath = relativePath.replace(/\.js$/, '');
     
-    return `import i18n from '${relativePath}';\n`;
+    return `import lang from '${relativePath}';\n`;
   }
 
   /**

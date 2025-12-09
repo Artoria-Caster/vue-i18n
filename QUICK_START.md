@@ -57,7 +57,7 @@ npm start
 
 **同时自动生成：**
 
-1. **`output/zh-CN/`** - 中文语言包文件夹，按模块拆分
+1. **`output/zh-cn/`** - 中文语言包文件夹，按模块拆分
    - `common.js` - 公共模块
      ```javascript
      export default {
@@ -98,7 +98,7 @@ npm run regenerate output/i18n-extracted-xxx.json
 node src/index.js regenerate output/i18n-extracted-xxx.json
 ```
 
-这会根据修改后的JSON重新生成 `zh-CN/` 文件夹和 `translation-template.txt` 文件。
+这会根据修改后的JSON重新生成 `zh-cn/` 文件夹和 `translation-template.txt` 文件。
 
 ### 第五步：生成其他语言配置（可选）
 
@@ -119,49 +119,70 @@ node src/index.js regenerate output/i18n-extracted-xxx.json
 
 ```bash
 # 生成英语配置
-npm run translate output en-US
+npm run translate output en-us
 
 # 生成日语配置
-npm run translate output ja-JP
+npm run translate output ja-jp
 
 # 生成韩语配置
-npm run translate output ko-KR
+npm run translate output ko-kr
 ```
 
-这会在 `output/` 目录生成对应的语言包文件夹（如 `en-US/`）。
+这会在 `output/` 目录生成对应的语言包文件夹（如 `en-us/`）。
 
 > 详细文档请参考 [翻译生成指南](./docs/TRANSLATE_GUIDE.md)
 
-### 第六步：生成i18n配置（可选）
+### 第六步：生成i18n配置
 
 ```bash
 node src/index.js generate output/i18n-extracted-xxx.json
 ```
 
-这会在你的 Vue 2 项目中创建：
-- `src/lang/index.js` - i18n初始化文件（使用 vue-i18n@8.x）
-- `src/lang/locales/zh-CN/` - 中文语言包文件夹
+这会在output目录生成 `lang` 文件夹：
+```
+output/
+├── i18n-extracted-xxx.json
+├── zh-cn/                     # 语言包文件夹（用于查看）
+├── translation-template.txt
+└── lang/                      # i18n配置文件夹（需要复制到项目）
+    ├── index.js               # i18n初始化文件
+    └── locales/
+        └── zh-cn/             # 中文语言包
+            ├── common.js
+            ├── user.js
+            └── ...
+```
 
-### 第七步：手动集成i18n
+### 第七步：手动集成i18n到项目
 
-在你的 `main.js` 中引入i18n：
+**1. 复制lang文件夹到项目**
+
+```bash
+# Windows
+xcopy /E /I output\lang your-vue-project\src\lang
+
+# Linux/Mac
+cp -r output/lang your-vue-project/src/lang
+```
+
+**2. 安装vue-i18n（如果还没安装）**
+
+```bash
+cd your-vue-project
+npm install vue-i18n@8
+```
+
+**3. 在 main.js 中引入i18n**
 
 ```javascript
 import Vue from 'vue'
 import App from './App.vue'
-import i18n from './lang'
+import i18n from './lang'  // 引入i18n配置
 
 new Vue({
   i18n,
   render: h => h(App)
 }).$mount('#app')
-```
-
-安装vue-i18n（如果还没安装）：
-
-```bash
-cd your-vue-project
-npm install vue-i18n
 ```
 
 ### 第八步：手动替换或自动替换
@@ -234,7 +255,12 @@ npm run regenerate output/i18n-extracted-xxx.json
 # 4. 生成i18n配置
 node src/index.js generate output/i18n-extracted-xxx.json
 
-# 5. 分批手动替换（安全）
+# 5. 手动复制lang文件夹到项目
+cp -r output/lang your-project/src/lang
+
+# 6. 在main.js中引入i18n配置
+
+# 7. 分批手动替换（安全）
 # 根据JSON文件逐文件替换
 ```
 
