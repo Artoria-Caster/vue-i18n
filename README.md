@@ -1,10 +1,42 @@
-# Vue i18n 自动转换工具
+# tricolor-vue2-i18n
 
-一个帮助大型 Vue2 项目快速引入i18n国际化支持的自动化工具。通过AST语法树解析，自动提取项目中的中文文本，生成i18n配置文件，并支持自动替换源代码。
+一个帮助大型 Vue2 项目快速引入i18n国际化支持的自动化命令行工具。通过AST语法树解析，自动提取项目中的中文文本，生成i18n配置文件，并支持自动替换源代码。
 
 > **注意**: 本工具专为 Vue2 项目设计，使用 vue-i18n@8.x 版本。
 
-## 📚 文档导航
+## 🚀 快速使用 (CLI命令行工具)
+
+### 全局安装
+
+```bash
+npm install -g tricolor-vue2-i18n
+```
+
+### 在项目中使用
+
+```bash
+# 进入你的Vue2项目目录
+cd your-vue2-project
+
+# 1. 初始化（提取中文并生成语言包）
+tricolor-vue2-i18n init
+
+# 2. 替换中文为i18n调用
+tricolor-vue2-i18n replace
+
+# 3. 生成英文语言包（可选）
+tricolor-vue2-i18n translate en-us
+
+# 4. 验证转换结果
+tricolor-vue2-i18n verify
+```
+
+### CLI文档
+
+- 📖 [CLI完整文档](./CLI_README.md)
+- 🚀 [CLI快速开始](./CLI_QUICK_START.md)
+
+## 📚 原始工具文档导航
 
 - **快速开始**: [QUICK_START.md](./QUICK_START.md) - 5分钟快速上手指南
 - **手动集成指南**: [docs/MANUAL_INTEGRATION.md](./docs/MANUAL_INTEGRATION.md) - 如何手动将生成的配置集成到项目中

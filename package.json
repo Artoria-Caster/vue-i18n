@@ -1,8 +1,11 @@
 {
-  "name": "vue-i18n-auto-tool",
+  "name": "tricolor-vue2-i18n",
   "version": "1.0.0",
   "description": "自动提取Vue项目中文文本并转换为i18n配置的工具",
   "main": "src/index.js",
+  "bin": {
+    "tricolor-vue2-i18n": "./bin/cli.js"
+  },
   "scripts": {
     "start": "node src/index.js",
     "extract": "node src/index.js extract",
@@ -11,7 +14,8 @@
     "regenerate": "node src/index.js regenerate",
     "translate": "node src/index.js translate",
     "verify": "node scripts/verify.js",
-    "test": "node scripts/verify.js"
+    "test": "node scripts/verify.js",
+    "cli:test": "cd examples/vue2-demo && tricolor-vue2-i18n --help"
   },
   "keywords": [
     "vue",
@@ -26,11 +30,11 @@
     "@babel/generator": "^7.23.0",
     "@babel/parser": "^7.23.0",
     "@babel/traverse": "^7.23.0",
-    "vue-template-compiler": "^2.6.14",
+    "commander": "^11.1.0",
     "glob": "^10.3.0",
-    "commander": "^11.1.0"
+    "inquirer": "^8.2.5",
+    "vue-template-compiler": "^2.6.14"
   },
-  "devDependencies": {},
   "engines": {
     "node": ">=14.0.0"
   }

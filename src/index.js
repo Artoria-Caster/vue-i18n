@@ -16,8 +16,9 @@ const Validator = require('./validator');
  * 主入口文件
  */
 class I18nTool {
-  constructor() {
-    this.config = this.loadConfig();
+  constructor(config = null) {
+    // 如果传入了config则使用传入的，否则从文件加载
+    this.config = config || this.loadConfig();
     this.logger = new Logger({
       logLevel: this.config.logLevel || 'info',
       enableFileLog: this.config.enableFileLog !== false,

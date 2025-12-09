@@ -2,7 +2,54 @@
 
 本文档记录了项目的所有重要变更和修复。
 
-## [最新版本] - 2025-12-09
+## [2.0.0] - 2025-12-09
+
+### 🎉 重大更新 - CLI命令行工具版本
+
+#### 新增功能
+- **CLI工具**: 项目改造为命令行工具 `tricolor-vue2-i18n`
+- **4个核心命令**: `init`, `replace`, `translate`, `verify`
+- **交互式提示**: 使用inquirer实现友好的用户交互
+- **Element UI配置**: 支持可选的Element UI多语言配置
+- **自动工作目录**: 无需配置文件，自动使用当前目录
+
+#### 使用方式变更
+**旧方式** (需要config.json):
+```bash
+npm run extract
+npm run generate
+npm run replace
+```
+
+**新方式** (CLI命令):
+```bash
+tricolor-vue2-i18n init
+tricolor-vue2-i18n replace
+tricolor-vue2-i18n translate
+tricolor-vue2-i18n verify
+```
+
+#### 技术变更
+- 包名: `vue-i18n-auto-tool` → `tricolor-vue2-i18n`
+- 新增依赖: `inquirer@8.2.5`
+- 新增: `bin/cli.js` CLI入口文件
+- 修改: `src/index.js` 支持外部配置
+
+#### 新增文档
+- `CLI_README.md` - CLI完整使用文档
+- `CLI_QUICK_START.md` - 快速开始指南
+- `TEST_GUIDE.md` - 测试指南
+- `UPDATES.md` - 详细更新说明
+- `SUMMARY.md` - 改造总结
+
+#### 兼容性
+- ✅ 所有原有功能保持完整
+- ✅ 原有npm scripts仍可使用
+- ✅ 核心代码逻辑不变
+
+---
+
+## [1.0.0] - 2025-12-09 (之前版本)
 
 ### 重大变更 🔥
 
