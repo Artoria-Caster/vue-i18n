@@ -173,17 +173,27 @@ class I18nTool {
     console.log('  Vue i18n 自动转换工具 - 翻译生成模式');
     console.log('========================================\n');
 
-    // 先检查是否存在 zh-cn 文件夹，不存在则检查 zh-cn.js 文件（兼容旧格式）
-    let zhCNPath = path.join(outputDir, 'zh-cn');
+    // 按优先级检查 zh-cn 语言包位置：
+    // 1. outputDir/lang/zh-cn (新的标准位置)
+    // 2. outputDir/zh-cn (旧位置)
+    // 3. outputDir/zh-cn.js (兼容旧格式单文件)
+    let zhCNPath = path.join(outputDir, 'lang', 'zh-cn');
     if (!fs.existsSync(zhCNPath)) {
-      zhCNPath = path.join(outputDir, 'zh-cn.js');
+      zhCNPath = path.join(outputDir, 'zh-cn');
+      if (!fs.existsSync(zhCNPath)) {
+        zhCNPath = path.join(outputDir, 'zh-cn.js');
+      }
     }
     
     const templatePath = path.join(outputDir, 'translation-template.txt');
 
     // 检查必需文件是否存在
     if (!fs.existsSync(zhCNPath)) {
-      console.error(`错误: 未找到 zh-cn 文件夹或 zh-cn.js 文件: ${zhCNPath}`);
+      console.error(`错误: 未找到 zh-cn 文件夹或 zh-cn.js 文件`);
+      console.log(`已检查位置:`);
+      console.log(`  - ${path.join(outputDir, 'lang', 'zh-cn')}`);
+      console.log(`  - ${path.join(outputDir, 'zh-cn')}`);
+      console.log(`  - ${path.join(outputDir, 'zh-cn.js')}`);
       console.log('请先运行 npm run regenerate <json文件> 生成 zh-cn 语言包');
       return;
     }

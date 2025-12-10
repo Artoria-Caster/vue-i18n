@@ -150,9 +150,12 @@ class TranslationGenerator {
    * 递归翻译对象
    * @param {Object} obj - 要翻译的对象
    * @param {Map} translationMap - 翻译映射
+   * @param {Array} missingItems - 收集缺失翻译的数组（可选）
+   * @param {string} currentPath - 当前处理的路径（可选）
+   * @param {string} moduleName - 当前模块名（可选）
    * @returns {Object} 翻译后的对象
    */
-  translateObject(obj, translationMap) {
+  translateObject(obj, translationMap, missingItems = null, currentPath = '', moduleName = '') {
     if (typeof obj !== 'object' || obj === null) {
       return obj;
     }
@@ -161,24 +164,58 @@ class TranslationGenerator {
 
     for (const key in obj) {
       const value = obj[key];
+      const newPath = currentPath ? `${currentPath}.${key}` : key;
 
       if (typeof value === 'string') {
         // 尝试翻译字符串值
+        let translatedValue = '';
+        let status = 'missing'; // missing: 模板中不存在, empty: 模板中存在但为空
+        
         if (translationMap.has(value)) {
-          // 如果在翻译映射中找到（包括空字符串），使用翻译值
-          result[key] = translationMap.get(value);
-        } else {
-          // 如果不在翻译映射中，保留原值
-          result[key] = value;
+          translatedValue = translationMap.get(value);
+          if (translatedValue === '') {
+            status = 'empty';
+          } else {
+            status = 'translated';
+          }
+        }
+        
+        result[key] = translatedValue;
+        
+        // 收集缺失或空翻译的条目
+        if (missingItems && (status === 'missing' || status === 'empty')) {
+          missingItems.push({
+            module: moduleName,
+            path: newPath,
+            chinese: value,
+            status: status
+          });
         }
       } else if (typeof value === 'object' && value !== null) {
         // 递归处理嵌套对象
-        result[key] = this.translateObject(value, translationMap);
+        result[key] = this.translateObject(value, translationMap, missingItems, newPath, moduleName);
       } else {
         result[key] = value;
       }
     }
 
+    return result;
+  }
+
+  /**
+   * 翻译对象并跟踪模块信息
+   * @param {Object} zhCNData - 中文语言包数据
+   * @param {Map} translationMap - 翻译映射
+   * @param {Array} missingItems - 收集缺失翻译的数组
+   * @returns {Object} 翻译后的对象
+   */
+  translateObjectWithTracking(zhCNData, translationMap, missingItems) {
+    const result = {};
+    
+    for (const [moduleName, moduleData] of Object.entries(zhCNData)) {
+      result[moduleName] = this.translateObject(moduleData, translationMap, missingItems, '', moduleName);
+    }
+    
     return result;
   }
 
@@ -235,9 +272,10 @@ class TranslationGenerator {
     const translationMap = this.readTranslationTemplate(templatePath);
     console.log(`   ✓ 成功读取 ${translationMap.size} 条翻译`);
 
-    // 3. 执行翻译
+    // 3. 执行翻译（同时收集缺失翻译）
     console.log('3. 执行翻译...');
-    const translatedData = this.translateObject(zhCNData, translationMap);
+    const missingItems = [];
+    const translatedData = this.translateObjectWithTracking(zhCNData, translationMap, missingItems);
 
     // 4. 统计翻译情况
     const stats = this.getTranslationStats(zhCNData, translatedData);
@@ -253,8 +291,8 @@ class TranslationGenerator {
     const stats_zhCN = fs.statSync(zhCNPath);
     
     if (stats_zhCN.isDirectory()) {
-      // 生成文件夹结构，将语言代码转换为小写
-      const outputFolderPath = path.join(output, targetLang.toLowerCase());
+      // 生成文件夹结构，将语言代码转换为小写，并放在 lang 子目录中
+      const outputFolderPath = path.join(output, 'lang', targetLang.toLowerCase());
       await fs.promises.mkdir(outputFolderPath, { recursive: true });
       
       const moduleFiles = [];
@@ -274,16 +312,93 @@ class TranslationGenerator {
         console.log(`     - ${path.basename(file)}`);
       });
       
+      // 生成缺失翻译报告
+      await this.generateMissingReport(missingItems, targetLang, output, outputFolderPath);
+      
       return outputFolderPath;
     } else {
-      // 生成单文件（兼容旧格式），将语言代码转换为小写
-      const outputPath = path.join(output, `${targetLang.toLowerCase()}.js`);
+      // 生成单文件（兼容旧格式），将语言代码转换为小写，并放在 lang 子目录中
+      const langDir = path.join(output, 'lang');
+      await fs.promises.mkdir(langDir, { recursive: true });
+      const outputPath = path.join(langDir, `${targetLang.toLowerCase()}.js`);
       const fileContent = `export default ${this.formatObjectToJS(translatedData, 0)};\n`;
       await fs.promises.writeFile(outputPath, fileContent, 'utf-8');
       
       console.log(`   ✓ 已生成: ${outputPath}`);
+      
+      // 生成缺失翻译报告
+      await this.generateMissingReport(missingItems, targetLang, output, outputPath);
+      
       return outputPath;
     }
+  }
+
+  /**
+   * 生成缺失翻译报告
+   * @param {Array} missingItems - 缺失翻译的条目数组
+   * @param {string} targetLang - 目标语言
+   * @param {string} outputDir - 输出目录
+   * @param {string} outputFolderPath - 生成的语言包路径
+   */
+  async generateMissingReport(missingItems, targetLang, outputDir, outputFolderPath) {
+    if (missingItems.length === 0) {
+      console.log('\n   ✓ 所有条目均已翻译完成！');
+      return;
+    }
+
+    console.log(`\n5. 生成缺失翻译报告...`);
+    
+    const reportPath = path.join(outputDir, `missing-translations-${targetLang}.txt`);
+    const lines = [];
+    
+    lines.push('======================================');
+    lines.push(`  ${targetLang.toUpperCase()} 缺失翻译报告`);
+    lines.push('======================================');
+    lines.push('');
+    lines.push(`生成时间: ${new Date().toLocaleString('zh-CN')}`);
+    lines.push(`语言包路径: ${outputFolderPath}`);
+    lines.push(`总计缺失: ${missingItems.length} 条`);
+    lines.push('');
+    lines.push('--------------------------------------');
+    lines.push('');
+    
+    // 按模块分组
+    const groupedByModule = {};
+    for (const item of missingItems) {
+      if (!groupedByModule[item.module]) {
+        groupedByModule[item.module] = [];
+      }
+      groupedByModule[item.module].push(item);
+    }
+    
+    // 生成每个模块的报告
+    for (const [moduleName, items] of Object.entries(groupedByModule)) {
+      lines.push(`## 模块: ${moduleName}`);
+      lines.push(`   文件: ${path.join(outputFolderPath, moduleName.charAt(0).toLowerCase() + moduleName.slice(1) + '.js')}`);
+      lines.push(`   缺失: ${items.length} 条`);
+      lines.push('');
+      
+      for (let i = 0; i < items.length; i++) {
+        const item = items[i];
+        lines.push(`${i + 1}. ${item.status === 'missing' ? '[不存在]' : '[空翻译]'}`);
+        lines.push(`   路径: ${item.path}`);
+        lines.push(`   原文: ${item.chinese}`);
+        lines.push(`   状态: ${item.status === 'missing' ? '翻译模板中不存在此条目' : '翻译模板中为空字符串'}`);
+        lines.push('');
+      }
+      
+      lines.push('--------------------------------------');
+      lines.push('');
+    }
+    
+    lines.push('提示：');
+    lines.push('1. [不存在] 表示该条目在 translation-template.txt 中未找到');
+    lines.push('2. [空翻译] 表示该条目在 translation-template.txt 中存在但翻译为空');
+    lines.push('3. 请在 translation-template.txt 中补充翻译后，重新运行 translate 命令');
+    lines.push('');
+    
+    await fs.promises.writeFile(reportPath, lines.join('\n'), 'utf-8');
+    console.log(`   ✓ 报告已生成: ${reportPath}`);
   }
 
   /**
