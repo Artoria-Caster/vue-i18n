@@ -64,7 +64,7 @@ program
         encoding: 'utf-8',
         autoReplace: {
           enabled: false,
-          backup: true,
+          backup: false,
           backupDir: path.join(cwd, 'backup'),
           preview: false,
           importPath: '@/lang',
@@ -293,7 +293,7 @@ function createConfig(cwd) {
     encoding: 'utf-8',
     autoReplace: {
       enabled: false,
-      backup: true,
+      backup: false,
       backupDir: path.join(cwd, 'backup'),
       preview: false,
       importPath: '@/lang',

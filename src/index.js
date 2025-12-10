@@ -246,6 +246,14 @@ class I18nTool {
     const targetProjectPath = path.resolve(this.config.targetProject);
     await this.replacer.replace(keyMap, targetProjectPath, preview);
 
+    // 生成待处理任务记录（如果有失败或跳过的项目）
+    if (!preview) {
+      const pendingTasksFile = this.logger.generatePendingTasks(outputDir);
+      if (pendingTasksFile) {
+        console.log(`\n📝 待处理任务报告已生成: ${pendingTasksFile}`);
+      }
+    }
+
     console.log('\n========================================');
     console.log(`${preview ? '预览' : '替换'}完成！`);
     console.log('如果已修改代码，请手动将 output/lang 文件夹复制到项目中');
